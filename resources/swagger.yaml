@@ -129,11 +129,6 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: Existing budget items fall outside the new trip dates
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
         '500': { $ref: '#/components/responses/ServerError' }
     delete:
       tags: [Trips]
@@ -234,7 +229,7 @@ paths:
       - $ref: '#/components/parameters/TripId'
     get:
       tags: [Dashboard]
-      summary: Totals for one trip (per category, per day, grand total) in DKK
+      summary: Totals for one trip (per category, grand total, daily budget) in DKK
       security: [{ bearerAuth: [] }]
       responses:
         '200':
@@ -347,18 +342,12 @@ components:
         category: { $ref: '#/components/schemas/Category' }
         amount: { type: number, minimum: 0, description: Value in DKK, example: 1850 }
         description: { type: string, maxLength: 500, example: Return flights }
-        date:
-          type: string
-          format: date
-          description: Must be within the trip dates. Defaults to the trip start date.
-          example: '2026-03-10'
     BudgetItemUpdate:
       type: object
       properties:
         category: { $ref: '#/components/schemas/Category' }
         amount: { type: number, minimum: 0 }
         description: { type: string, maxLength: 500 }
-        date: { type: string, format: date }
     BudgetItem:
       type: object
       properties:
@@ -367,17 +356,11 @@ components:
         category: { $ref: '#/components/schemas/Category' }
         amount: { type: number, example: 1850 }
         description: { type: string, example: Return flights }
-        date: { type: string, format: date, example: '2026-03-10' }
     CategoryTotal:
       type: object
       properties:
         category: { $ref: '#/components/schemas/Category' }
         total: { type: number, example: 1850 }
-    DayTotal:
-      type: object
-      properties:
-        date: { type: string, format: date, example: '2026-03-10' }
-        total: { type: number, example: 5480 }
     TripDashboard:
       type: object
       properties:
@@ -386,7 +369,15 @@ components:
         totalByCategory:
           type: array
           items: { $ref: '#/components/schemas/CategoryTotal' }
-        totalByDay:
-          type: array
-          items: { $ref: '#/components/schemas/DayTotal' }
         grandTotal: { type: number, example: 7230 }
+        dailyBudget:
+          type: object
+          description: Budget to spend per day, based on in-trip costs only (pre-trip costs are excluded).
+          properties:
+            days: { type: integer, description: Trip length in days (inclusive), example: 6 }
+            categories:
+              type: array
+              items: { type: string }
+              example: [Activities, Food, Transport, Extras]
+            total: { type: number, description: Sum of the included categories, example: 1450 }
+            perDay: { type: number, description: total divided by days, example: 241.67 }

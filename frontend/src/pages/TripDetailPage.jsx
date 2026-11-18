@@ -5,7 +5,7 @@ import DashboardView from '../components/DashboardView.jsx';
 import { ErrorMessage, Spinner, SuccessMessage } from '../components/Feedback.jsx';
 import { CATEGORIES, formatDKK } from '../components/format.js';
 
-const EMPTY_ITEM = { category: CATEGORIES[0], amount: '', description: '', date: '' };
+const EMPTY_ITEM = { category: CATEGORIES[0], amount: '', description: '' };
 
 export default function TripDetailPage() {
   const { tripId } = useParams();
@@ -53,7 +53,6 @@ export default function TripDetailPage() {
       category: form.category,
       amount: Number(form.amount),
       description: form.description,
-      ...(form.date && { date: form.date }),
     };
     try {
       if (editingId) {
@@ -74,7 +73,7 @@ export default function TripDetailPage() {
 
   function onEdit(item) {
     setEditingId(item.id);
-    setForm({ category: item.category, amount: item.amount, description: item.description, date: item.date });
+    setForm({ category: item.category, amount: item.amount, description: item.description });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -196,16 +195,6 @@ export default function TripDetailPage() {
           Amount (DKK)
           <input type="number" min="0" step="0.01" required value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
         </label>
-        <label>
-          Date
-          <input
-            type="date"
-            min={trip.startDate}
-            max={trip.endDate}
-            value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })}
-          />
-        </label>
         <label className="grow">
           Description (optional)
           <input maxLength={500} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
@@ -227,7 +216,6 @@ export default function TripDetailPage() {
           <table>
             <thead>
               <tr>
-                <th>Date</th>
                 <th>Category</th>
                 <th>Description</th>
                 <th className="num">Amount</th>
@@ -235,11 +223,8 @@ export default function TripDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {[...items]
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .map((item) => (
+              {items.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.date}</td>
                     <td>{item.category}</td>
                     <td>{item.description || <span className="muted">-</span>}</td>
                     <td className="num">{formatDKK(item.amount)}</td>

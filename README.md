@@ -66,10 +66,10 @@ Each trip has budget items in all seven categories.
 ## Business rules
 
 1. A user can create, list, update and delete a trip budget, named `Trip budget - [City 1] - [City 2]`. A trip has a start and an end date (end must not be before start).
-2. Inside a trip, the user can create, list, update and delete budget items. Each item has a **category**, an **amount** in DKK (0 or more), an optional **description** and a **date**.
+2. Inside a trip, the user can create, list, update and delete budget items. Each item has a **category**, an **amount** in DKK (0 or more), and an optional **description**.
 3. Allowed categories: `Flights`, `Accommodation`, `Activities`, `Food`, `Transport`, `Travel insurance`, `Extras`.
-4. An item's date must be inside the trip dates. If no date is sent, the trip start date is used. A trip's dates cannot be changed so that existing items fall outside them.
-5. The dashboard shows the **total per category**, the **grand total** and the **total per day**, all in DKK. It is shown per trip; there is no sum across trips.
+4. The dashboard shows, per trip, the **total per category**, the **grand total** and the **daily budget**, all in DKK. There is no sum across trips.
+5. The **daily budget** is the amount to spend per day: (Activities + Food + Transport + Extras) divided by the number of trip days (start and end date both count). Pre-trip costs (Flights, Accommodation, Travel insurance) are not included. They still count in the category totals and the grand total.
 6. Users only see and change their own trips. Another user's trip returns `404`.
 7. Deleting a trip deletes its budget items.
 8. All endpoints except register and login need a `Authorization: Bearer <token>` header.

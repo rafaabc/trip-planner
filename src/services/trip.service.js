@@ -60,12 +60,6 @@ function update(userId, tripId, data = {}) {
   const fields = validate(data, true);
   const merged = { ...current, ...fields };
   if (merged.endDate < merged.startDate) throw new AppError(400, 'endDate must not be before startDate');
-  const hasItemsOutside = items.findAll(
-    (i) => i.tripId === tripId && (i.date < merged.startDate || i.date > merged.endDate)
-  ).length;
-  if (hasItemsOutside) {
-    throw new AppError(409, 'Some budget items have dates outside the new trip dates');
-  }
   return withTitle(trips.update(tripId, fields));
 }
 

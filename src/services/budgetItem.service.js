@@ -1,9 +1,9 @@
 const items = require('../models/budgetItem.model');
 const { AppError } = require('../errors');
 const { CATEGORIES } = require('../constants');
-const { getOwnedTrip, isValidDate } = require('./trip.service');
+const { getOwnedTrip } = require('./trip.service');
 
-function validate(data, trip, partial) {
+function validate(data, partial) {
   const out = {};
   if (data.category !== undefined || !partial) {
     if (!CATEGORIES.includes(data.category)) {
@@ -25,15 +25,6 @@ function validate(data, trip, partial) {
   } else if (!partial) {
     out.description = '';
   }
-  if (data.date !== undefined || !partial) {
-    // Date is optional on create: defaults to the trip start date.
-    const date = data.date === undefined ? trip.startDate : data.date;
-    if (!isValidDate(date)) throw new AppError(400, 'date must be a valid date (YYYY-MM-DD)');
-    if (date < trip.startDate || date > trip.endDate) {
-      throw new AppError(400, `date must be within the trip dates (${trip.startDate} to ${trip.endDate})`);
-    }
-    out.date = date;
-  }
   return out;
 }
 
@@ -54,13 +45,13 @@ function get(userId, tripId, itemId) {
 
 function create(userId, tripId, data = {}) {
   const trip = getOwnedTrip(userId, tripId);
-  return items.create({ tripId: trip.id, ...validate(data, trip, false) });
+  return items.create({ tripId: trip.id, ...validate(data, false) });
 }
 
 function update(userId, tripId, itemId, data = {}) {
   const trip = getOwnedTrip(userId, tripId);
   getItem(trip, itemId);
-  return items.update(itemId, validate(data, trip, true));
+  return items.update(itemId, validate(data, true));
 }
 
 function remove(userId, tripId, itemId) {

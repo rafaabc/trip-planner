@@ -30,12 +30,13 @@ export default function DashboardView({ data }) {
           <Bars rows={data.totalByCategory} labelKey="category" />
         </section>
         <section className="card">
-          <h3>Total by day</h3>
-          {data.totalByDay.length === 0 ? (
-            <p className="muted">No budget items yet.</p>
-          ) : (
-            <Bars rows={data.totalByDay} labelKey="date" />
-          )}
+          <h3>Daily budget</h3>
+          <strong className="total">{formatDKK(data.dailyBudget.perDay)}</strong>
+          <span className="muted"> per day</span>
+          <p className="muted">
+            {formatDKK(data.dailyBudget.total)} over {data.dailyBudget.days} days. Counts only{' '}
+            {data.dailyBudget.categories.join(', ')}. Flights, Accommodation and Travel insurance are not included.
+          </p>
         </section>
       </div>
     </div>
