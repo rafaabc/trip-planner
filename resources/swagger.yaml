@@ -1,0 +1,383 @@
+openapi: 3.0.3
+info:
+  title: My Trip Planner API
+  version: 1.0.0
+  description: |
+    REST API to plan trip budgets. A user creates trips ("Trip budget - City 1 - City 2")
+    and fills budget items per category. All monetary values are in DKK.
+    No external services are used: the user enters every value manually.
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Auth
+  - name: Trips
+  - name: Budget items
+  - name: Dashboard
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive a JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /api/trips:
+    get:
+      tags: [Trips]
+      summary: List the authenticated user's trips
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Trip' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    post:
+      tags: [Trips]
+      summary: Create a trip
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TripInput' }
+      responses:
+        '201':
+          description: Trip created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /api/trips/{tripId}:
+    parameters:
+      - $ref: '#/components/parameters/TripId'
+    get:
+      tags: [Trips]
+      summary: Get a trip
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: The trip
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    put:
+      tags: [Trips]
+      summary: Update a trip (any subset of fields)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TripUpdate' }
+      responses:
+        '200':
+          description: Trip updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    delete:
+      tags: [Trips]
+      summary: Delete a trip and all its budget items
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Trip deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /api/trips/{tripId}/items:
+    parameters:
+      - $ref: '#/components/parameters/TripId'
+    get:
+      tags: [Budget items]
+      summary: List budget items of a trip
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: List of budget items
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BudgetItem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    post:
+      tags: [Budget items]
+      summary: Add a budget item to a trip
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetItemInput' }
+      responses:
+        '201':
+          description: Budget item created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetItem' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /api/trips/{tripId}/items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/TripId'
+      - $ref: '#/components/parameters/ItemId'
+    get:
+      tags: [Budget items]
+      summary: Get a budget item
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: The budget item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetItem' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    put:
+      tags: [Budget items]
+      summary: Update a budget item (any subset of fields)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetItemUpdate' }
+      responses:
+        '200':
+          description: Budget item updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetItem' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+    delete:
+      tags: [Budget items]
+      summary: Delete a budget item
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Budget item deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+  /api/trips/{tripId}/dashboard:
+    parameters:
+      - $ref: '#/components/parameters/TripId'
+    get:
+      tags: [Dashboard]
+      summary: Totals for one trip (per category, grand total, daily budget) in DKK
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Trip dashboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TripDashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { $ref: '#/components/responses/ServerError' }
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TripId:
+      name: tripId
+      in: path
+      required: true
+      schema: { type: integer }
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: integer }
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing, invalid or expired token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found (or not owned by the user)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string, example: Trip not found }
+    Category:
+      type: string
+      enum: [Flights, Accommodation, Activities, Food, Transport, Travel insurance, Extras]
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, example: Dana Olsen }
+        email: { type: string, format: email, example: dana@example.com }
+        password: { type: string, minLength: 6, example: secret123 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: alice@example.com }
+        password: { type: string, example: alice123 }
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Alice Jensen }
+        email: { type: string, example: alice@example.com }
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user: { $ref: '#/components/schemas/User' }
+    TripInput:
+      type: object
+      required: [cityFrom, cityTo, startDate, endDate]
+      properties:
+        cityFrom: { type: string, example: Copenhagen }
+        cityTo: { type: string, example: Lisbon }
+        startDate: { type: string, format: date, example: '2026-03-10' }
+        endDate: { type: string, format: date, example: '2026-03-15' }
+    TripUpdate:
+      type: object
+      properties:
+        cityFrom: { type: string }
+        cityTo: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+    Trip:
+      allOf:
+        - $ref: '#/components/schemas/TripInput'
+        - type: object
+          properties:
+            id: { type: integer, example: 1 }
+            userId: { type: integer, example: 1 }
+            title: { type: string, example: Trip budget - Copenhagen - Lisbon }
+    BudgetItemInput:
+      type: object
+      required: [category, amount]
+      properties:
+        category: { $ref: '#/components/schemas/Category' }
+        amount: { type: number, minimum: 0, description: Value in DKK, example: 1850 }
+        description: { type: string, maxLength: 500, example: Return flights }
+    BudgetItemUpdate:
+      type: object
+      properties:
+        category: { $ref: '#/components/schemas/Category' }
+        amount: { type: number, minimum: 0 }
+        description: { type: string, maxLength: 500 }
+    BudgetItem:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        tripId: { type: integer, example: 1 }
+        category: { $ref: '#/components/schemas/Category' }
+        amount: { type: number, example: 1850 }
+        description: { type: string, example: Return flights }
+    CategoryTotal:
+      type: object
+      properties:
+        category: { $ref: '#/components/schemas/Category' }
+        total: { type: number, example: 1850 }
+    TripDashboard:
+      type: object
+      properties:
+        tripId: { type: integer, example: 1 }
+        currency: { type: string, example: DKK }
+        totalByCategory:
+          type: array
+          items: { $ref: '#/components/schemas/CategoryTotal' }
+        grandTotal: { type: number, example: 7230 }
+        dailyBudget:
+          type: object
+          description: Budget to spend per day, based on in-trip costs only (pre-trip costs are excluded).
+          properties:
+            days: { type: integer, description: Trip length in days (inclusive), example: 6 }
+            categories:
+              type: array
+              items: { type: string }
+              example: [Activities, Food, Transport, Extras]
+            total: { type: number, description: Sum of the included categories, example: 1450 }
+            perDay: { type: number, description: total divided by days, example: 241.67 }
