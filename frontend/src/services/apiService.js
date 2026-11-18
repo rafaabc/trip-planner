@@ -59,6 +59,5 @@ export const itemApi = {
 };
 
 export const dashboardApi = {
-  overall: () => api.get('/api/dashboard'),
   forTrip: (tripId) => api.get(`/api/trips/${tripId}/dashboard`),
 };

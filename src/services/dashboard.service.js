@@ -1,4 +1,3 @@
-const trips = require('../models/trip.model');
 const items = require('../models/budgetItem.model');
 const { CATEGORIES, CURRENCY } = require('../constants');
 const { getOwnedTrip } = require('./trip.service');
@@ -29,9 +28,4 @@ function forTrip(userId, tripId) {
   return { tripId: trip.id, ...summarize(items.findAll((i) => i.tripId === trip.id)) };
 }
 
-function forUser(userId) {
-  const tripIds = new Set(trips.findAll((t) => t.userId === userId).map((t) => t.id));
-  return { tripCount: tripIds.size, ...summarize(items.findAll((i) => tripIds.has(i.tripId))) };
-}
-
-module.exports = { forTrip, forUser };
+module.exports = { forTrip };

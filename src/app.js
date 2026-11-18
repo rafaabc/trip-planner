@@ -21,7 +21,6 @@ app.get('/', (req, res) => res.redirect('/api-docs'));
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/trips', require('./routes/trip.routes'));
-app.use('/api/dashboard', require('./routes/dashboard.routes'));
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 

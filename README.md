@@ -69,7 +69,7 @@ Each trip has budget items in all seven categories.
 2. Inside a trip, the user can create, list, update and delete budget items. Each item has a **category**, an **amount** in DKK (0 or more), an optional **description** and a **date**.
 3. Allowed categories: `Flights`, `Accommodation`, `Activities`, `Food`, `Transport`, `Travel insurance`, `Extras`.
 4. An item's date must be inside the trip dates. If no date is sent, the trip start date is used. A trip's dates cannot be changed so that existing items fall outside them.
-5. The dashboard shows the **total per category**, the **grand total** and the **total per day**, all in DKK. It is available for one trip and for all of the user's trips combined.
+5. The dashboard shows the **total per category**, the **grand total** and the **total per day**, all in DKK. It is shown per trip; there is no sum across trips.
 6. Users only see and change their own trips. Another user's trip returns `404`.
 7. Deleting a trip deletes its budget items.
 8. All endpoints except register and login need a `Authorization: Bearer <token>` header.
@@ -94,7 +94,6 @@ Each trip has budget items in all seven categories.
 | GET / POST | `/api/trips/{tripId}/items` | List / create budget items |
 | GET / PUT / DELETE | `/api/trips/{tripId}/items/{itemId}` | Read / update / delete an item |
 | GET | `/api/trips/{tripId}/dashboard` | Totals for one trip |
-| GET | `/api/dashboard` | Totals across all trips |
 
 ## Project structure
 

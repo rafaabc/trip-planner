@@ -246,19 +246,6 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { $ref: '#/components/responses/ServerError' }
 
-  /api/dashboard:
-    get:
-      tags: [Dashboard]
-      summary: Totals across all of the user's trips in DKK
-      security: [{ bearerAuth: [] }]
-      responses:
-        '200':
-          description: Overall dashboard
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/OverallDashboard' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '500': { $ref: '#/components/responses/ServerError' }
 
 components:
   securitySchemes:
@@ -395,18 +382,6 @@ components:
       type: object
       properties:
         tripId: { type: integer, example: 1 }
-        currency: { type: string, example: DKK }
-        totalByCategory:
-          type: array
-          items: { $ref: '#/components/schemas/CategoryTotal' }
-        totalByDay:
-          type: array
-          items: { $ref: '#/components/schemas/DayTotal' }
-        grandTotal: { type: number, example: 7230 }
-    OverallDashboard:
-      type: object
-      properties:
-        tripCount: { type: integer, example: 1 }
         currency: { type: string, example: DKK }
         totalByCategory:
           type: array
