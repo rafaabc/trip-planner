@@ -50,5 +50,22 @@
       "expectedStatus": 409,
       "expectedMessage": "Email already registered"
     }
+  ],
+  "wrongType": [
+    {
+      "description": "name is a number",
+      "payload": { "name": 12345, "email": "{{uniqueEmail}}", "password": "secret123" },
+      "misleadingMessage": "Name is required"
+    },
+    {
+      "description": "email is a number",
+      "payload": { "name": "Dana Olsen", "email": 12345, "password": "secret123" },
+      "misleadingMessage": "A valid email is required"
+    },
+    {
+      "description": "password is a number with 6 digits",
+      "payload": { "name": "Dana Olsen", "email": "{{uniqueEmail}}", "password": 123456 },
+      "misleadingMessage": "Password must be at least 6 characters"
+    }
   ]
 }
