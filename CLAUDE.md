@@ -24,5 +24,4 @@ All code and text in this project must be in English.
 - Test plan: GitHub Wiki (Test Plan). Work is tracked in the GitHub Project board and issues; bugs use the `bug` label and are linked as sub-issues of the session issue.
 
 ## Documentation workflow
-- Before opening a PR, check whether `README.md`, this file and the QA Journal (private, Notion) need an update, and update them in the same branch.
-- Never mention the QA Journal in public places (README, CLAUDE.md, issues, PRs). It is a private log.
+- Before opening a PR, check whether `README.md` and this file need an update (new folders, scripts, versions, decisions), and update them in the same branch.
