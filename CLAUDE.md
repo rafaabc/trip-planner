@@ -21,6 +21,7 @@ All code and text in this project must be in English.
 - Data driven: cases live in `tests/api/fixtures/*.json`; helpers in `tests/api/test/helpers/`. Use a unique email per run (the store is in memory).
 - Quality gates, run from `tests/api`: `npm run lint`, `npm run format:check`, `npm run audit`.
 - Tests tagged `@bug #<issue>` are guardrails for open bugs and fail on purpose until the bug is fixed.
+- CI: `.github/workflows/api-tests.yml` (GitHub Actions) runs quality gates and the API tests on every PR to `main`. The `@bug` guardrails run in a separate non-blocking job; the other jobs must stay green. When a bug is fixed, its guardrail test turns green and can lose the `@bug` tag.
 - Test plan: GitHub Wiki (Test Plan). Work is tracked in the GitHub Project board and issues; bugs use the `bug` label and are linked as sub-issues of the session issue.
 
 ## Documentation workflow

@@ -54,6 +54,7 @@ Install these before running the project:
 | Mochawesome `^8.1.1` | HTML and JSON test report |
 | ESLint `^10.15.0`, eslint-plugin-mocha `^12.0.2` | Linting |
 | Prettier `^3.10.1` | Formatting |
+| GitHub Actions | CI: lint, format check, audit and tests on every pull request |
 
 ## Installation and Setup
 
@@ -114,7 +115,24 @@ npm test
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
-Four tests (tagged `@bug #19` and `@bug #20`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed.
+Four tests (tagged `@bug #19` and `@bug #20`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
+
+```bash
+npm run test:report -- --grep "@bug" --invert   # without the known-bug guardrails
+npm run test:report -- --grep "@bug"            # only the known-bug guardrails
+```
+
+### Continuous integration
+
+The workflow `.github/workflows/api-tests.yml` runs on every pull request to `main` and on every push to `main`. It starts the backend and runs three jobs in parallel:
+
+| Job | Blocks the merge | What it does |
+|---|---|---|
+| Lint, format and audit | Yes | `npm run lint`, `npm run format:check` and `npm run audit` in `tests/api` |
+| API tests | Yes | Starts the backend and runs every test except the `@bug` guardrails |
+| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19 and #20 are fixed |
+
+The Mochawesome HTML report of each test job is uploaded as a workflow artifact.
 
 ### Test data
 
@@ -135,6 +153,7 @@ Each trip has budget items in all seven categories.
 - Budget item CRUD, per trip
 - Dashboard with totals per category, grand total and daily budget
 - Automated API tests for US-01 Sign Up (registration with valid data, missing fields, duplicate email, password never exposed)
+- Continuous integration with GitHub Actions: quality gates and API tests on every pull request
 
 ### Business rules
 
@@ -172,6 +191,9 @@ Each trip has budget items in all seven categories.
 
 ```
 .
+├── .github/
+│   └── workflows/
+│       └── api-tests.yml   # CI: quality gates, API tests and known-bug guardrails
 ├── src/                    # Express API: routes, controllers, services, models, seed
 ├── resources/
 │   └── swagger.yaml        # OpenAPI 3 spec, served at /api-docs
