@@ -1,0 +1,163 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+  PORT: 3000
+  BASE_URL: http://localhost:3000
+  # Throwaway value: the API keeps its data in memory and no real data exists in CI
+  JWT_SECRET: ci-only-secret-not-used-anywhere-else
+
+jobs:
+  # Lint, formatting and dependency audit of the test project
+  quality:
+    name: Lint, format and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tests/api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/api/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Audit dependencies
+        run: npm run audit
+
+  # Required job: every test except the guardrails for known bugs
+  api-tests:
+    name: API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tests/api/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/api
+
+      - name: Start backend
+        # The & sends the process to the background so the job continues
+        run: npm start > backend.log 2>&1 &
+
+      - name: Wait for backend to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf "$BASE_URL/api-docs.yaml" > /dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 2s..."
+            sleep 2
+          done
+          echo "Backend did not start in time."
+          exit 1
+
+      - name: Run API tests (without known-bug guardrails)
+        run: npm run test:report -- --grep "@bug" --invert
+        working-directory: tests/api
+
+      - name: Show backend log on failure
+        if: failure()
+        run: cat backend.log
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-tests-report
+          path: tests/api/reports
+          if-no-files-found: warn
+
+  # Non-blocking job: tests that describe the expected behavior of open bugs.
+  # They fail until the bugs are fixed (see issues #19 and #20), so a failure here
+  # does not fail the workflow.
+  bug-guardrails:
+    name: Known-bug guardrails (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tests/api/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/api
+
+      - name: Start backend
+        run: npm start > backend.log 2>&1 &
+
+      - name: Wait for backend to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf "$BASE_URL/api-docs.yaml" > /dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 2s..."
+            sleep 2
+          done
+          echo "Backend did not start in time."
+          exit 1
+
+      - name: Run known-bug guardrails
+        run: npm run test:report -- --grep "@bug"
+        working-directory: tests/api
+
+      - name: Upload guardrails report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bug-guardrails-report
+          path: tests/api/reports
+          if-no-files-found: warn
