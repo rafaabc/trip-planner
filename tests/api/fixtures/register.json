@@ -1,0 +1,54 @@
+{
+  "valid": [
+    {
+      "description": "name, email and password are valid",
+      "payload": { "name": "Dana Olsen", "email": "{{uniqueEmail}}", "password": "secret123" },
+      "expectedStatus": 201
+    },
+    {
+      "description": "password has exactly 6 characters (minimum length)",
+      "payload": { "name": "Dana Olsen", "email": "{{uniqueEmail}}", "password": "abc123" },
+      "expectedStatus": 201
+    }
+  ],
+  "missingField": [
+    {
+      "description": "name is missing",
+      "payload": { "email": "{{uniqueEmail}}", "password": "secret123" },
+      "expectedStatus": 400,
+      "expectedMessage": "Name is required"
+    },
+    {
+      "description": "email is missing",
+      "payload": { "name": "Dana Olsen", "password": "secret123" },
+      "expectedStatus": 400,
+      "expectedMessage": "A valid email is required"
+    },
+    {
+      "description": "password is missing",
+      "payload": { "name": "Dana Olsen", "email": "{{uniqueEmail}}" },
+      "expectedStatus": 400,
+      "expectedMessage": "Password must be at least 6 characters"
+    },
+    {
+      "description": "the body is empty",
+      "payload": {},
+      "expectedStatus": 400,
+      "expectedMessage": "Name is required"
+    }
+  ],
+  "duplicateEmail": [
+    {
+      "description": "the same email is sent again",
+      "emailTransform": "same",
+      "expectedStatus": 409,
+      "expectedMessage": "Email already registered"
+    },
+    {
+      "description": "the same email is sent again in upper case",
+      "emailTransform": "uppercase",
+      "expectedStatus": 409,
+      "expectedMessage": "Email already registered"
+    }
+  ]
+}
