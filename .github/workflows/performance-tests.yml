@@ -1,0 +1,110 @@
+name: Performance Tests
+
+on:
+  # The timing test runs only when someone starts it from the Actions tab (Run workflow).
+  # Response times on shared runners vary from run to run, so it must not block a pull request.
+  workflow_dispatch:
+  # On a pull request only the quality job runs, and only when the performance tests change.
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/performance/**'
+      - '.github/workflows/performance-tests.yml'
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+  PORT: 3000
+  BASE_URL: http://localhost:3000
+  # Throwaway value: the API keeps its data in memory and no real data exists in CI
+  JWT_SECRET: ci-only-secret-not-used-anywhere-else
+
+jobs:
+  # Formatting and dependency audit of the test project
+  quality:
+    name: Format and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tests/performance
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/performance/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Audit dependencies
+        run: npm run audit
+
+  # Manual only: registers about 30 users, one per second, and checks p95 under 500 ms
+  performance-tests:
+    name: Performance tests
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            tests/performance/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/performance
+
+      - name: Start backend
+        # The & sends the process to the background so the job continues
+        run: npm start > backend.log 2>&1 &
+
+      - name: Wait for backend to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf "$BASE_URL/api-docs.yaml" > /dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 2s..."
+            sleep 2
+          done
+          echo "Backend did not start in time."
+          exit 1
+
+      - name: Run performance tests
+        run: npm test
+        working-directory: tests/performance
+
+      - name: Show backend log on failure
+        if: failure()
+        run: cat backend.log
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-report
+          path: tests/performance/reports
+          if-no-files-found: warn

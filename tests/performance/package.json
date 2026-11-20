@@ -1,0 +1,19 @@
+{
+  "name": "trip-planner-performance-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Performance tests for the Trip Planner API (Artillery)",
+  "scripts": {
+    "pretest": "node -e \"require('fs').mkdirSync('reports', { recursive: true })\"",
+    "test": "cross-env ARTILLERY_DISABLE_TELEMETRY=1 artillery run scenarios/register.yml --output reports/register.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "audit": "npm audit --audit-level=high"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "artillery": "^2.0.34",
+    "cross-env": "^10.1.0",
+    "prettier": "^3.10.1"
+  }
+}
