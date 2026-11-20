@@ -168,6 +168,8 @@ Every scenario carries the user story tag (`@US-01`) and, when it comes from the
 
 ### Continuous integration
 
+Both workflows are skipped when a change touches only Markdown files (`**/*.md`, for example the README), because there is nothing to test. A change that touches anything else, including the workflow files themselves, runs them.
+
 The workflow `.github/workflows/ui-tests.yml` runs the UI tests on every pull request to `main` and on every push to `main`:
 
 | Job | Blocks the merge | What it does |
