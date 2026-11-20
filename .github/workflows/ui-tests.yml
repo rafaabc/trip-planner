@@ -1,0 +1,109 @@
+name: UI Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+  PORT: 3000
+  BASE_URL: http://localhost:5173
+  API_URL: http://localhost:3000
+  # Throwaway value: the API keeps its data in memory and no real data exists in CI
+  JWT_SECRET: ci-only-secret-not-used-anywhere-else
+
+jobs:
+  # Lint, formatting, types and dependency audit of the UI test project
+  quality:
+    name: Lint, format, types and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tests/e2e
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/e2e/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Audit dependencies
+        run: npm run audit
+
+  # Required job: Playwright + Gherkin scenarios in Chromium.
+  # Playwright starts the backend and the built frontend itself (see webServer in playwright.config.ts).
+  ui-tests:
+    name: UI tests (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+            tests/e2e/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/e2e
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: tests/e2e
+
+      - name: Run UI tests
+        # @bug scenarios (none yet) would run in a separate non-blocking job, like the API suite
+        run: npm test -- --grep-invert "@bug"
+        working-directory: tests/e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report
+          if-no-files-found: warn
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-results
+          path: tests/e2e/allure-results
+          if-no-files-found: warn

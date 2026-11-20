@@ -15,6 +15,7 @@ The project also contains the test work built around the application:
 - Test plan: [Wiki - Test Plan](https://github.com/rafaabc/trip-planner/wiki/Test-Plan)
 - Work tracking: [GitHub Project board](https://github.com/users/rafaabc/projects/2)
 - Automated API tests: `tests/api/` (see [Installation and Setup](#installation-and-setup))
+- Automated UI tests: `tests/e2e/` (see [Running the UI tests](#running-the-ui-tests))
 
 ## Dependencies
 
@@ -23,6 +24,7 @@ Install these before running the project:
 - Node.js 20 or newer, with npm
 - A free port `3000` (API) and `5173` (website)
 - For the automated API tests: the backend must be running (see below)
+- For the automated UI tests: nothing to start by hand, Playwright starts the backend and the website (Chromium is installed once with `npx playwright install chromium`)
 
 ## Technologies Used
 
@@ -57,6 +59,17 @@ Install these before running the project:
 | ESLint `^10.15.0`, eslint-plugin-mocha `^12.0.2` | Linting |
 | Prettier `^3.10.1` | Formatting |
 | GitHub Actions | CI: lint, format check, audit and tests on every pull request |
+
+**UI tests** (`tests/e2e/`)
+
+| Technology | Purpose |
+|---|---|
+| Playwright `^1.60.0` (Chromium only) | Browser automation and test runner |
+| playwright-bdd `^9.2.1` | Turns Gherkin `.feature` files into Playwright tests |
+| TypeScript `^5.9.0` | Page objects, step definitions and fixtures |
+| allure-playwright `^3.4.0`, allure-commandline `^2.34.0` | Allure report |
+| ESLint `^10.15.0`, eslint-plugin-playwright `^2.10.0` | Linting (bans fixed waits) |
+| Prettier `^3.10.1` | Formatting |
 
 ## Installation and Setup
 
@@ -97,6 +110,8 @@ Install these before running the project:
 | `.env` | `JWT_EXPIRES_IN` | Token lifetime, e.g. `2h` |
 | `frontend/.env` | `VITE_API_URL` | API base URL (default `http://localhost:3000`) |
 | `tests/api/.env` | `BASE_URL` | API under test (default `http://localhost:3000`) |
+| `tests/e2e/.env` | `BASE_URL` | Website under test (default `http://localhost:5173`) |
+| `tests/e2e/.env` | `API_URL` | API used for test preconditions (default `http://localhost:3000`) |
 
 ### Running the API tests
 
@@ -124,7 +139,42 @@ npm run test:report -- --grep "@bug" --invert   # without the known-bug guardrai
 npm run test:report -- --grep "@bug"            # only the known-bug guardrails
 ```
 
+### Running the UI tests
+
+The UI tests live in `tests/e2e/`. Scenarios are written in Gherkin (`features/*.feature`), bound to code by step definitions (`steps/`), and drive the website through page objects (`pages/`). Playwright starts the backend and the built website itself (and reuses them if already running), so there is nothing to start by hand:
+
+```bash
+cd tests/e2e
+npm install
+npx playwright install chromium
+cp .env.example .env
+npm test
+```
+
+| Script | Description |
+|---|---|
+| `npm test` | Generate the Playwright tests from the `.feature` files and run them in Chromium |
+| `npm run test:headed` | Same, with a visible browser |
+| `npm run test:stability` | Run every scenario twice (a test only counts as done after two green runs) |
+| `npm run report:html` | Open the Playwright HTML report |
+| `npm run report:allure` | Build and open the Allure report from `allure-results/` |
+| `npm run lint` | Lint with ESLint (no fixed waits) |
+| `npm run format:check` | Check formatting with Prettier |
+| `npm run typecheck` | Type check with TypeScript |
+| `npm run audit` | `npm audit` for high severity issues |
+
+Every scenario carries the user story tag (`@US-01`) and, when it comes from the test plan, the test case key (`@TC-01-06`). Locally the suite runs with 3 workers: with the default of 6, the first parallel wave of browsers made some tests miss the 5 s assertion timeout on a cold start.
+
 ### Continuous integration
+
+The workflow `.github/workflows/ui-tests.yml` runs the UI tests on every pull request to `main` and on every push to `main`:
+
+| Job | Blocks the merge | What it does |
+|---|---|---|
+| Lint, format, types and audit | Yes | `npm run lint`, `format:check`, `typecheck` and `audit` in `tests/e2e` |
+| UI tests (Chromium) | Yes | Installs Chromium and runs every scenario except `@bug` ones (none yet) |
+
+The Playwright report and the Allure results are uploaded as workflow artifacts.
 
 The workflow `.github/workflows/api-tests.yml` runs on every pull request to `main` and on every push to `main`. It starts the backend and runs three jobs in parallel:
 
@@ -155,7 +205,8 @@ Each trip has budget items in all seven categories.
 - Budget item CRUD, per trip
 - Dashboard with totals per category, grand total and daily budget
 - Automated API tests for US-01 Sign Up (registration with valid data, missing fields, duplicate email, password never exposed)
-- Continuous integration with GitHub Actions: quality gates and API tests on every pull request
+- Automated UI tests for US-01 Sign Up (Playwright and Gherkin: valid sign-up, 6-character password, duplicate email, blank name, browser validation of each field)
+- Continuous integration with GitHub Actions: quality gates, API tests and UI tests on every pull request
 
 ### Business rules
 
@@ -195,20 +246,27 @@ Each trip has budget items in all seven categories.
 .
 ├── .github/
 │   └── workflows/
-│       └── api-tests.yml   # CI: quality gates, API tests and known-bug guardrails
+│       ├── api-tests.yml   # CI: quality gates, API tests and known-bug guardrails
+│       └── ui-tests.yml    # CI: quality gates and UI tests (Chromium)
 ├── src/                    # Express API: routes, controllers, services, models, seed
 ├── resources/
 │   └── swagger.yaml        # OpenAPI 3 spec, served at /api-docs
 ├── frontend/
 │   └── src/                # React app: pages, components, services/apiService.js, styles
 └── tests/
-    └── api/                # API test project (own package.json)
-        ├── test/
-        │   ├── register/   # US-01 Sign Up tests (register.test.js)
-        │   └── helpers/    # Test helpers (unique email per run)
-        ├── fixtures/       # Test data for the data driven tests
-        ├── eslint.config.mjs  # ESLint configuration
-        └── .mocharc.js     # Mocha configuration
+    ├── api/                # API test project (own package.json)
+    │   ├── test/
+    │   │   ├── register/   # US-01 Sign Up tests (register.test.js)
+    │   │   └── helpers/    # Test helpers (unique email per run)
+    │   ├── fixtures/       # Test data for the data driven tests
+    │   ├── eslint.config.mjs  # ESLint configuration
+    │   └── .mocharc.js     # Mocha configuration
+    └── e2e/                # UI test project (own package.json)
+        ├── features/       # Gherkin scenarios (sign-up.feature)
+        ├── steps/          # Step definitions and fixtures (playwright-bdd)
+        ├── pages/          # Page objects (locators and user actions, no assertions)
+        ├── support/        # Test data helpers (unique email per run)
+        └── playwright.config.ts  # Playwright and playwright-bdd configuration
 ```
 
 ## Author
