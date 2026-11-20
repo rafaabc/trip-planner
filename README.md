@@ -17,6 +17,7 @@ The project also contains the test work built around the application:
 - Work tracking: [GitHub Project board](https://github.com/users/rafaabc/projects/2)
 - Automated API tests: `tests/api/` (see [Installation and Setup](#installation-and-setup))
 - Automated UI tests: `tests/e2e/` (see [Running the UI tests](#running-the-ui-tests))
+- Automated performance tests: `tests/performance/` (see [Running the performance tests](#running-the-performance-tests))
 
 ## Dependencies
 
@@ -26,6 +27,7 @@ Install these before running the project:
 - A free port `3000` (API) and `5173` (website)
 - For the automated API tests: the backend must be running (see below)
 - For the automated UI tests: nothing to start by hand, Playwright starts the backend and the website (Chromium is installed once with `npx playwright install chromium`)
+- For the automated performance tests: Node.js 22.18 or newer (Artillery requirement) and the backend running (see below)
 
 ## Technologies Used
 
@@ -70,6 +72,14 @@ Install these before running the project:
 | TypeScript `^5.9.0` | Page objects, step definitions and fixtures |
 | allure-playwright `^3.4.0`, allure-commandline `^2.34.0` | Allure report |
 | ESLint `^10.15.0`, eslint-plugin-playwright `^2.10.0` | Linting (bans fixed waits) |
+| Prettier `^3.10.1` | Formatting |
+
+**Performance tests** (`tests/performance/`)
+
+| Technology | Purpose |
+|---|---|
+| Artillery `^2.0.34` | Load generation and response time statistics; scenarios are YAML files |
+| cross-env `^10.1.0` | Sets the telemetry opt-out variable on every operating system |
 | Prettier `^3.10.1` | Formatting |
 
 ## Installation and Setup
@@ -166,9 +176,29 @@ npm test
 
 Every scenario carries the user story tag (`@US-01`) and, when it comes from the test plan, the test case key (`@TC-01-06`). Locally the suite runs with 3 workers: with the default of 6, the first parallel wave of browsers made some tests miss the 5 s assertion timeout on a cold start.
 
+### Running the performance tests
+
+The performance tests live in `tests/performance/` and use [Artillery](https://www.artillery.io/). Each scenario is a YAML file in `scenarios/` (one file per user story). They call the running API, so start the backend first, then:
+
+```bash
+cd tests/performance
+npm install
+npm test
+```
+
+| Script | Description |
+|---|---|
+| `npm test` | Run `scenarios/register.yml` and write the JSON report to `tests/performance/reports/register.json` |
+| `npm run format:check` | Check formatting with Prettier |
+| `npm run audit` | `npm audit` for high severity issues |
+
+`scenarios/register.yml` (US-01 Sign Up) registers one new user per second for 30 seconds, about 30 requests. Requests do not overlap, so each one measures the endpoint and not a queue behind the password hashing. The run fails (non-zero exit code) when the p95 response time is not under 500 ms, the limit from the test plan, or when any response is not `201`. Min, mean, median, p95, p99 and max are printed and saved in the report as information.
+
+To test another server, pass the target: `npm test -- --target http://localhost:4000`. Artillery sends anonymous usage data by default; the `npm test` script turns that off.
+
 ### Continuous integration
 
-Both workflows are skipped when a change touches only Markdown files (`**/*.md`, for example the README), because there is nothing to test. A change that touches anything else, including the workflow files themselves, runs them.
+The API and UI workflows are skipped when a change touches only Markdown files (`**/*.md`, for example the README), because there is nothing to test. A change that touches anything else, including the workflow files themselves, runs them.
 
 The workflow `.github/workflows/ui-tests.yml` runs the UI tests on every pull request to `main` and on every push to `main`:
 
@@ -188,6 +218,15 @@ The workflow `.github/workflows/api-tests.yml` runs on every pull request to `ma
 | Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19 and #20 are fixed |
 
 The Mochawesome HTML report of each test job is uploaded as a workflow artifact.
+
+The workflow `.github/workflows/performance-tests.yml` is different, because response times on shared runners change from run to run:
+
+| Trigger | Job | What it does |
+|---|---|---|
+| Pull request that changes `tests/performance/**` or the workflow | Format and audit | `npm run format:check` and `npm run audit` in `tests/performance` |
+| Manual (Actions tab, Run workflow) | Performance tests | Starts the backend, runs the Artillery scenario and uploads the JSON report |
+
+The timing test never runs on its own, so it cannot block a merge.
 
 ### Test data
 
@@ -249,8 +288,9 @@ Each trip has budget items in all seven categories.
 .
 ├── .github/
 │   └── workflows/
-│       ├── api-tests.yml   # CI: quality gates, API tests and known-bug guardrails
-│       └── ui-tests.yml    # CI: quality gates and UI tests (Chromium)
+│       ├── api-tests.yml          # CI: quality gates, API tests and known-bug guardrails
+│       ├── performance-tests.yml  # CI: quality gates, plus the timing test on demand
+│       └── ui-tests.yml           # CI: quality gates and UI tests (Chromium)
 ├── src/                    # Express API: routes, controllers, services, models, seed
 ├── resources/
 │   └── swagger.yaml        # OpenAPI 3 spec, served at /api-docs
@@ -264,6 +304,8 @@ Each trip has budget items in all seven categories.
     │   ├── fixtures/       # Test data for the data driven tests
     │   ├── eslint.config.mjs  # ESLint configuration
     │   └── .mocharc.js     # Mocha configuration
+    ├── performance/        # Performance test project (own package.json)
+    │   └── scenarios/      # Artillery scenarios, one file per user story (register.yml)
     └── e2e/                # UI test project (own package.json)
         ├── features/       # Gherkin scenarios (sign-up.feature)
         ├── steps/          # Step definitions and fixtures (playwright-bdd)

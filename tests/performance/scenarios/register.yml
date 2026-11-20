@@ -1,0 +1,43 @@
+# US-01 Sign Up: performance of POST /api/auth/register (issue #22).
+#
+# Profile: 1 new user per second for 30 seconds (about 30 requests). Requests do not overlap, so
+# each one measures the endpoint itself and not a queue behind the password hashing (bcryptjs
+# runs on the main thread). The first request is the cold one.
+#
+# The target can be overridden: npm test -- --target http://localhost:3000
+
+config:
+  target: http://localhost:3000
+  phases:
+    - name: One registration per second
+      duration: 30
+      arrivalRate: 1
+
+  plugins:
+    # expect: checks each response and prints the failed ones with request and response.
+    expect: {}
+
+    # ensure: fails the whole run (non-zero exit code) when a limit is broken.
+    ensure:
+      # Limit from the test plan: response in under 500 ms. The check is strict (p95 < 500).
+      thresholds:
+        - http.response_time.p95: 500
+      # Every request must have created the user (201). No other status is accepted.
+      conditions:
+        - expression: 'http.codes.201 == http.requests'
+
+# min, mean, median, p95, p99 and max are printed in the summary and saved in the JSON report
+# (reports/register.json). They are information, not limits: only the 500 ms above is defined.
+
+scenarios:
+  - name: Register a new user
+    flow:
+      - post:
+          url: /api/auth/register
+          json:
+            name: Dana Olsen
+            # The store is in memory and emails must be unique, so each user gets a random one.
+            email: 'perf.{{ $randomString(12) }}@example.com'
+            password: secret123
+          expect:
+            - statusCode: 201
