@@ -1,6 +1,7 @@
 # My Trip Planner
 
 [![API Tests](https://github.com/rafaabc/trip-planner/actions/workflows/api-tests.yml/badge.svg?branch=main)](https://github.com/rafaabc/trip-planner/actions/workflows/api-tests.yml)
+[![UI Tests](https://github.com/rafaabc/trip-planner/actions/workflows/ui-tests.yml/badge.svg?branch=main)](https://github.com/rafaabc/trip-planner/actions/workflows/ui-tests.yml)
 
 > A simple web app and REST API to plan the budget of a trip, used as a testing-focused portfolio project.
 
