@@ -24,7 +24,7 @@ All code and text in this project must be in English.
 - UI test rules: role-based locators first (`getByRole`, `getByLabel`), no fixed waits (`waitForTimeout` is a lint error), no assertions in page objects, one unique email per run. A scenario counts as done after two green runs (`npm run test:stability`). Tag scenarios with the story (`@US-01`) and the test case key (`@TC-01-06`). Do not change the frontend to make a UI test pass.
 - Quality gates, run from `tests/e2e`: `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run audit`.
 - Tests tagged `@bug #<issue>` are guardrails for open bugs and fail on purpose until the bug is fixed.
-- CI: `.github/workflows/api-tests.yml` and `.github/workflows/ui-tests.yml` (GitHub Actions) run quality gates and the API / UI tests on every PR to `main`. The `@bug` guardrails run in a separate non-blocking job; the other jobs must stay green. When a bug is fixed, its guardrail test turns green and can lose the `@bug` tag.
+- CI: `.github/workflows/api-tests.yml` and `.github/workflows/ui-tests.yml` (GitHub Actions) run quality gates and the API / UI tests on every PR to `main`. Both skip changes that touch only `**/*.md` (`paths-ignore`); never make these jobs required checks in branch protection, because a skipped workflow would leave them pending and block the merge. The `@bug` guardrails run in a separate non-blocking job; the other jobs must stay green. When a bug is fixed, its guardrail test turns green and can lose the `@bug` tag.
 - Test plan: GitHub Wiki (Test Plan). Work is tracked in the GitHub Project board and issues; bugs use the `bug` label and are linked as sub-issues of the session issue.
 
 ## Documentation workflow

@@ -3,8 +3,13 @@ name: API Tests
 on:
   push:
     branches: [main]
+    # Nothing to test when only documentation changes
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
 
 permissions:
   contents: read
