@@ -1,0 +1,46 @@
+# US-02 Log In: performance of POST /api/auth/login (issue #36).
+#
+# Profile: 1 login per second for 30 seconds (about 30 requests). Requests do not overlap, so
+# each one measures the endpoint itself and not a queue behind the password check (bcryptjs
+# runs on the main thread). The first request is the cold one. The test plan asks for a single
+# request; 30 requests give statistics that mean something (p95, p99) and keep the same limit.
+#
+# The user is the seed user of the API (src/seed.js), so no setup request is needed and the
+# metrics contain only the login requests.
+#
+# The target can be overridden: npm run test:login -- --target http://localhost:3000
+
+config:
+  target: http://localhost:3000
+  phases:
+    - name: One login per second
+      duration: 30
+      arrivalRate: 1
+
+  plugins:
+    # expect: checks each response and prints the failed ones with request and response.
+    expect: {}
+
+    # ensure: fails the whole run (non-zero exit code) when a limit is broken.
+    ensure:
+      # Limit from the test plan: response in under 500 ms. The check is strict (p95 < 500).
+      thresholds:
+        - http.response_time.p95: 500
+      # Every request must have logged in (200). No other status is accepted.
+      conditions:
+        - expression: 'http.codes.200 == http.requests'
+
+# min, mean, median, p95, p99 and max are printed in the summary and saved in the JSON report
+# (reports/login.json). They are information, not limits: only the 500 ms above is defined.
+
+scenarios:
+  - name: Log in with the seed user
+    flow:
+      - post:
+          url: /api/auth/login
+          json:
+            email: alice@example.com
+            password: alice123
+          expect:
+            - statusCode: 200
+            - hasProperty: token

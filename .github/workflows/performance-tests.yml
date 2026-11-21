@@ -50,7 +50,8 @@ jobs:
       - name: Audit dependencies
         run: npm run audit
 
-  # Manual only: registers about 30 users, one per second, and checks p95 under 500 ms
+  # Manual only: registers about 30 users, one per second, then logs in about 30 times, one per
+  # second, and checks p95 under 500 ms in each scenario
   performance-tests:
     name: Performance tests
     if: github.event_name == 'workflow_dispatch'

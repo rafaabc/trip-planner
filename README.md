@@ -190,13 +190,17 @@ npm test
 
 | Script | Description |
 |---|---|
-| `npm test` | Run `scenarios/register.yml` and write the JSON report to `tests/performance/reports/register.json` |
+| `npm test` | Run every scenario, one after the other, and write one JSON report each to `tests/performance/reports/` |
+| `npm run test:register` | Run only `scenarios/register.yml` (report in `reports/register.json`) |
+| `npm run test:login` | Run only `scenarios/login.yml` (report in `reports/login.json`) |
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
 `scenarios/register.yml` (US-01 Sign Up) registers one new user per second for 30 seconds, about 30 requests. Requests do not overlap, so each one measures the endpoint and not a queue behind the password hashing. The run fails (non-zero exit code) when the p95 response time is not under 500 ms, the limit from the test plan, or when any response is not `201`. Min, mean, median, p95, p99 and max are printed and saved in the report as information.
 
-To test another server, pass the target: `npm test -- --target http://localhost:4000`. Artillery sends anonymous usage data by default; the `npm test` script turns that off.
+`scenarios/login.yml` (US-02 Log In) logs in once per second for 30 seconds with the seed user, about 30 requests. The test plan asks for a single request, but one sample makes every statistic the same value, so 30 requests give a p95 that means something while keeping the same limit. The run fails when the p95 response time is not under 500 ms or when any response is not `200`.
+
+To test another server, pass the target to one scenario: `npm run test:login -- --target http://localhost:4000`. Artillery sends anonymous usage data by default; the scripts turn that off.
 
 ### Continuous integration
 
@@ -226,7 +230,7 @@ The workflow `.github/workflows/performance-tests.yml` is different, because res
 | Trigger | Job | What it does |
 |---|---|---|
 | Pull request that changes `tests/performance/**` or the workflow | Format and audit | `npm run format:check` and `npm run audit` in `tests/performance` |
-| Manual (Actions tab, Run workflow) | Performance tests | Starts the backend, runs the Artillery scenario and uploads the JSON report |
+| Manual (Actions tab, Run workflow) | Performance tests | Starts the backend, runs the Artillery scenarios and uploads the JSON report |
 
 The timing test never runs on its own, so it cannot block a merge.
 
@@ -310,7 +314,7 @@ Each trip has budget items in all seven categories.
     │   ├── eslint.config.mjs  # ESLint configuration
     │   └── .mocharc.js     # Mocha configuration
     ├── performance/        # Performance test project (own package.json)
-    │   └── scenarios/      # Artillery scenarios, one file per user story (register.yml)
+    │   └── scenarios/      # Artillery scenarios, one file per user story (register.yml, login.yml)
     └── e2e/                # UI test project (own package.json)
         ├── features/       # Gherkin scenarios (sign-up.feature, log-in.feature)
         ├── steps/          # Step definitions and fixtures (playwright-bdd)
