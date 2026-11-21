@@ -122,6 +122,7 @@ Install these before running the project:
 | `.env` | `JWT_EXPIRES_IN` | Token lifetime, e.g. `2h` |
 | `frontend/.env` | `VITE_API_URL` | API base URL (default `http://localhost:3000`) |
 | `tests/api/.env` | `BASE_URL` | API under test (default `http://localhost:3000`) |
+| `tests/api/.env` | `JWT_SECRET` | Same value the API runs with. Only the expired-token test needs it; without it that test is skipped. CI sets it for the whole workflow |
 | `tests/e2e/.env` | `BASE_URL` | Website under test (default `http://localhost:5173`) |
 | `tests/e2e/.env` | `API_URL` | API used for test preconditions (default `http://localhost:3000`) |
 
@@ -144,7 +145,7 @@ npm test
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
-Four tests (tagged `@bug #19` and `@bug #20`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
+Eight tests (tagged `@bug #19`, `@bug #20`, `@bug #44` and `@bug #45`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
 
 ```bash
 npm run test:report -- --grep "@bug" --invert   # without the known-bug guardrails
@@ -216,7 +217,7 @@ The workflow `.github/workflows/api-tests.yml` runs on every pull request to `ma
 |---|---|---|
 | Lint, format and audit | Yes | `npm run lint`, `npm run format:check` and `npm run audit` in `tests/api` |
 | API tests | Yes | Starts the backend and runs every test except the `@bug` guardrails |
-| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19 and #20 are fixed |
+| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19, #20, #44 and #45 are fixed |
 
 The Mochawesome HTML report of each test job is uploaded as a workflow artifact.
 
@@ -248,6 +249,7 @@ Each trip has budget items in all seven categories.
 - Budget item CRUD, per trip
 - Dashboard with totals per category, grand total and daily budget
 - Automated API tests for US-01 Sign Up (registration with valid data, missing fields, duplicate email, password never exposed)
+- Automated API tests for US-02 Log In (valid and invalid credentials, protected endpoint with a valid, missing, malformed, altered or expired token)
 - Automated UI tests for US-01 Sign Up (Playwright and Gherkin: valid sign-up, 6-character password, duplicate email, blank name, browser validation of each field)
 - Continuous integration with GitHub Actions: quality gates, API tests and UI tests on every pull request
 
@@ -301,7 +303,8 @@ Each trip has budget items in all seven categories.
     ├── api/                # API test project (own package.json)
     │   ├── test/
     │   │   ├── register/   # US-01 Sign Up tests (register.test.js)
-    │   │   └── helpers/    # Test helpers (unique email per run)
+    │   │   ├── login/      # US-02 Log In tests (login.test.js)
+    │   │   └── helpers/    # Test helpers (unique email per run, token builders)
     │   ├── fixtures/       # Test data for the data driven tests
     │   ├── eslint.config.mjs  # ESLint configuration
     │   └── .mocharc.js     # Mocha configuration

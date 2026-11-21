@@ -1,0 +1,62 @@
+{
+  "invalidCredentials": [
+    {
+      "description": "the password is wrong for a registered email",
+      "credentials": "wrongPassword",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid email or password"
+    },
+    {
+      "description": "the email is not registered",
+      "credentials": "unknownEmail",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid email or password"
+    }
+  ],
+  "invalidToken": [
+    {
+      "description": "no Authorization header is sent",
+      "header": null,
+      "expectedStatus": 401,
+      "expectedMessage": "Token not provided"
+    },
+    {
+      "description": "the token is not a JWT",
+      "header": "Bearer not-a-jwt",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid or expired token"
+    },
+    {
+      "description": "the token has only two parts",
+      "header": "Bearer abc.def",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid or expired token"
+    },
+    {
+      "description": "the scheme is sent without a token",
+      "header": "Bearer",
+      "expectedStatus": 401,
+      "expectedMessage": "Token not provided"
+    }
+  ],
+  "alteredToken": [
+    {
+      "description": "the signature is altered",
+      "alteration": "signature",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid or expired token"
+    },
+    {
+      "description": "the payload is altered and the signature is kept",
+      "alteration": "payload",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid or expired token"
+    },
+    {
+      "description": "the algorithm is none and the signature is empty",
+      "alteration": "none",
+      "expectedStatus": 401,
+      "expectedMessage": "Invalid or expired token"
+    }
+  ]
+}

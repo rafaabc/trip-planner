@@ -19,6 +19,7 @@ All code and text in this project must be in English.
 ## Tests
 - API tests: `tests/api/` (own `package.json`; Mocha 12, Chai 4, Supertest, Mochawesome). They call the running API through `BASE_URL`, so start the backend first.
 - Data driven: cases live in `tests/api/fixtures/*.json`; helpers in `tests/api/test/helpers/`. Use a unique email per run (the store is in memory).
+- API tests that need a signed token (expired token) read `JWT_SECRET` from the environment, the same value the API runs with; they skip when it is not set. Tokens are built by hand in `tests/api/test/helpers/token.js` (no extra dependency).
 - Quality gates, run from `tests/api`: `npm run lint`, `npm run format:check`, `npm run audit`.
 - UI tests: `tests/e2e/` (own `package.json`; Playwright, playwright-bdd, TypeScript, Allure; Chromium only). Gherkin scenarios in `features/` (declarative, English), step definitions in `steps/`, page objects in `pages/`. Playwright starts the backend and the built frontend itself (`webServer`), so no manual start.
 - UI test rules: role-based locators first (`getByRole`, `getByLabel`), no fixed waits (`waitForTimeout` is a lint error), no assertions in page objects, one unique email per run. A scenario counts as done after two green runs (`npm run test:stability`). Tag scenarios with the story (`@US-01`) and the test case key (`@TC-01-06`). Do not change the frontend to make a UI test pass.
