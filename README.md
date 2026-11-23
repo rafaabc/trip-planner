@@ -145,7 +145,7 @@ npm test
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
-Eight tests (tagged `@bug #19`, `@bug #20`, `@bug #44` and `@bug #45`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
+Ten tests (tagged `@bug #19`, `@bug #20`, `@bug #44`, `@bug #45` and `@bug #56`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
 
 ```bash
 npm run test:report -- --grep "@bug" --invert   # without the known-bug guardrails
@@ -224,7 +224,7 @@ The workflow `.github/workflows/api-tests.yml` runs on every pull request to `ma
 |---|---|---|
 | Lint, format and audit | Yes | `npm run lint`, `npm run format:check` and `npm run audit` in `tests/api` |
 | API tests | Yes | Starts the backend and runs every test except the `@bug` guardrails |
-| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19, #20, #44 and #45 are fixed |
+| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19, #20, #44, #45 and #56 are fixed |
 
 The Mochawesome HTML report of each test job is uploaded as a workflow artifact.
 
@@ -283,6 +283,7 @@ Each trip has budget items in all seven categories.
 - Automated API tests for US-01 Sign Up (registration with valid data, missing fields, duplicate email, password never exposed)
 - Automated API tests for US-02 Log In (valid and invalid credentials, protected endpoint with a valid, missing, malformed, altered or expired token)
 - Automated API tests for US-03 Manage Trip Budgets (create with valid and boundary dates, update with an invalid date range, list only own trips, read, update and delete another user's trip)
+- Automated API tests for US-04 Manage Budget Items (create with and without description, each allowed category, invalid category, amount 0, negative and non-numeric amount, list own items, list, create, update and delete in another user's trip)
 - Automated UI tests for US-01 Sign Up (Playwright and Gherkin: valid sign-up, 6-character password, duplicate email, blank name, browser validation of each field)
 - Automated UI tests for US-02 Log In (Playwright and Gherkin: login with valid credentials)
 - Automated UI tests for US-03 Manage Trip Budgets (Playwright and Gherkin: create a trip through the website)
@@ -340,6 +341,7 @@ Each trip has budget items in all seven categories.
     │   │   ├── register/   # US-01 Sign Up tests (register.test.js)
     │   │   ├── login/      # US-02 Log In tests (login.test.js)
     │   │   ├── trips/      # US-03 Manage Trip Budgets tests (trips.test.js)
+    │   │   ├── items/      # US-04 Manage Budget Items tests (items.test.js)
     │   │   └── helpers/    # Test helpers (unique email per run, token builders, logged-in user)
     │   ├── fixtures/       # Test data for the data driven tests
     │   ├── eslint.config.mjs  # ESLint configuration
