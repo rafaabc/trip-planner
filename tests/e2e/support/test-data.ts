@@ -29,6 +29,21 @@ export function newTrip(overrides: Partial<TripDetails> = {}): TripDetails {
   };
 }
 
+export interface ItemDetails {
+  category: string;
+  amount: string;
+  description: string;
+}
+
+export function newItem(overrides: Partial<ItemDetails> = {}): ItemDetails {
+  return {
+    category: 'Food',
+    amount: '250',
+    description: 'Dinner in Lisbon',
+    ...overrides,
+  };
+}
+
 export function newAccount(overrides: Partial<Account> = {}): Account {
   return {
     name: 'Dana Olsen',

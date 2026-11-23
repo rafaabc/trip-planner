@@ -16,6 +16,7 @@ Given('I am logged in with that account', async ({ page, request, scenario }) =>
   });
   expect(response.status()).toBe(200);
   const { token, user } = await response.json();
+  scenario.token = token;
   await page.addInitScript(
     ({ token, user }) => {
       localStorage.setItem('token', token);
