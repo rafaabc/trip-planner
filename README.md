@@ -279,6 +279,7 @@ Each trip has budget items in all seven categories.
 - Dashboard with totals per category, grand total and daily budget
 - Automated API tests for US-01 Sign Up (registration with valid data, missing fields, duplicate email, password never exposed)
 - Automated API tests for US-02 Log In (valid and invalid credentials, protected endpoint with a valid, missing, malformed, altered or expired token)
+- Automated API tests for US-03 Manage Trip Budgets (create with valid and boundary dates, update with an invalid date range, list only own trips, read, update and delete another user's trip)
 - Automated UI tests for US-01 Sign Up (Playwright and Gherkin: valid sign-up, 6-character password, duplicate email, blank name, browser validation of each field)
 - Automated UI tests for US-02 Log In (Playwright and Gherkin: login with valid credentials)
 - Continuous integration with GitHub Actions: quality gates, API tests and UI tests on every pull request
@@ -334,7 +335,8 @@ Each trip has budget items in all seven categories.
     │   ├── test/
     │   │   ├── register/   # US-01 Sign Up tests (register.test.js)
     │   │   ├── login/      # US-02 Log In tests (login.test.js)
-    │   │   └── helpers/    # Test helpers (unique email per run, token builders)
+    │   │   ├── trips/      # US-03 Manage Trip Budgets tests (trips.test.js)
+    │   │   └── helpers/    # Test helpers (unique email per run, token builders, logged-in user)
     │   ├── fixtures/       # Test data for the data driven tests
     │   ├── eslint.config.mjs  # ESLint configuration
     │   └── .mocharc.js     # Mocha configuration
