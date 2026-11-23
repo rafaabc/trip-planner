@@ -1,0 +1,67 @@
+{
+  "validTrip": {
+    "cityFrom": "Copenhagen",
+    "cityTo": "Lisbon",
+    "startDate": "2027-03-10",
+    "endDate": "2027-03-15"
+  },
+  "validItem": {
+    "category": "Flights",
+    "amount": 1850,
+    "description": "Return flights"
+  },
+  "categories": [
+    "Flights",
+    "Accommodation",
+    "Activities",
+    "Food",
+    "Transport",
+    "Travel insurance",
+    "Extras"
+  ],
+  "invalidCategory": [
+    { "description": "the category is outside the list", "category": "Hotel" },
+    { "description": "the category has the wrong letter case (lower case)", "category": "flights" },
+    { "description": "the category has the wrong letter case (upper case)", "category": "FLIGHTS" },
+    { "description": "the category is an empty string", "category": "" }
+  ],
+  "invalidAmount": [
+    { "description": "the amount is negative", "amount": -1 },
+    { "description": "the amount is a small negative decimal", "amount": -0.01 },
+    { "description": "the amount is a non-numeric string", "amount": "abc" },
+    { "description": "the amount is null", "amount": null }
+  ],
+  "otherUserAccess": [
+    {
+      "testCase": "TC-04-10",
+      "description": "lists the items of",
+      "method": "GET",
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    },
+    {
+      "testCase": "TC-04-11",
+      "description": "creates an item in",
+      "method": "POST",
+      "body": { "category": "Food", "amount": 99, "description": "Intruder" },
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    },
+    {
+      "testCase": "TC-04-12",
+      "description": "updates an item of",
+      "method": "PUT",
+      "body": { "amount": 1, "description": "Changed by another user" },
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    },
+    {
+      "testCase": "TC-04-13",
+      "description": "deletes an item of",
+      "method": "DELETE",
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    }
+  ],
+  "hugeAmount": 1e308
+}
