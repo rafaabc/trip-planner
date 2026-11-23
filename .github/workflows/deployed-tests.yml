@@ -154,6 +154,7 @@ jobs:
       - name: Run performance tests
         # The scenarios default to localhost; --target points them at the deployed API
         run: |
+          mkdir -p reports
           npm run test:register -- --target "$API_URL"
           npm run test:login -- --target "$API_URL"
         working-directory: tests/performance
