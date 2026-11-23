@@ -194,6 +194,7 @@ npm test
 | `npm run test:register` | Run only `scenarios/register.yml` (report in `reports/register.json`) |
 | `npm run test:login` | Run only `scenarios/login.yml` (report in `reports/login.json`) |
 | `npm run test:trips` | Run only `scenarios/trips.yml` (report in `reports/trips.json`) |
+| `npm run test:items` | Run only `scenarios/items.yml` (report in `reports/items.json`) |
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
@@ -202,6 +203,8 @@ npm test
 `scenarios/login.yml` (US-02 Log In) logs in once per second for 30 seconds with the seed user, about 30 requests. The test plan asks for a single request, but one sample makes every statistic the same value, so 30 requests give a p95 that means something while keeping the same limit. The run fails when the p95 response time is not under 500 ms or when any response is not `200`.
 
 `scenarios/trips.yml` (US-03 Manage Trip Budgets) lists the trips of a user who has 100 trips, once per second for 30 seconds, about 30 requests. Before the load starts, `helpers/trips.js` creates the user and the 100 trips; those setup requests are not measured, only the list requests are. The run fails when the p95 response time is not under 500 ms, when any response is not `200`, or when a list does not return exactly 100 trips.
+
+`scenarios/items.yml` (US-04 Manage Budget Items) lists the items of a trip that has 200 items, once per second for 30 seconds, about 30 requests. Before the load starts, `helpers/items.js` creates the user, the trip and the 200 items; those setup requests are not measured, only the list requests are. The run fails when the p95 response time is not under 500 ms, when any response is not `200`, or when a list does not return exactly 200 items.
 
 To test another server, pass the target to one scenario: `npm run test:login -- --target http://localhost:4000`. Artillery sends anonymous usage data by default; the scripts turn that off.
 
@@ -256,7 +259,7 @@ Run a suite against it by changing the target:
 |---|---|
 | API | `BASE_URL=<api url> npm test` (the expired-token test also needs the same `JWT_SECRET` the API runs with, or it is skipped) |
 | UI | `BASE_URL=<frontend url> API_URL=<api url> npm test` (Playwright starts no local server when `BASE_URL` is not localhost) |
-| Performance | `npm run test:login -- --target <api url>` (same for `test:register` and `test:trips`) |
+| Performance | `npm run test:login -- --target <api url>` (same for `test:register`, `test:trips` and `test:items`) |
 
 The API case `@local-only` (TC-02-05, token with `alg: none`) is skipped on the deployed environment: the Vercel firewall answers `403 Forbidden` before the request reaches the app, so only a local run can verify how the app handles that token.
 
@@ -348,8 +351,8 @@ Each trip has budget items in all seven categories.
     │   ├── eslint.config.mjs  # ESLint configuration
     │   └── .mocharc.js     # Mocha configuration
     ├── performance/        # Performance test project (own package.json)
-    │   ├── scenarios/      # Artillery scenarios, one file per user story (register.yml, login.yml, trips.yml)
-    │   └── helpers/        # JavaScript used by the scenarios (trips.js creates the 100 trips)
+    │   ├── scenarios/      # Artillery scenarios, one file per user story (register.yml, login.yml, trips.yml, items.yml)
+    │   └── helpers/        # JavaScript used by the scenarios (trips.js creates the 100 trips, items.js the 200 items)
     └── e2e/                # UI test project (own package.json)
         ├── features/       # Gherkin scenarios (sign-up.feature, log-in.feature, manage-trip-budgets.feature, manage-budget-items.feature)
         ├── steps/          # Step definitions and fixtures (playwright-bdd)
