@@ -1,0 +1,52 @@
+# US-03 Manage Trip Budgets: performance of GET /api/trips with 100 trips (issue #37).
+#
+# Setup: before the load phase, one new user is created with 100 trips (helpers/trips.js). The
+# setup requests are not measured. Only the list requests below are in the statistics.
+#
+# Profile: 1 list per second for 30 seconds (about 30 requests), all for the same user with 100
+# trips. Requests do not overlap, so each one measures the endpoint and not a queue. The test
+# plan asks for the list after creating about 100 trips; 30 requests give statistics that mean
+# something (p95, p99) and keep the same limit.
+#
+# The target can be overridden: npm run test:trips -- --target http://localhost:3000
+
+config:
+  target: http://localhost:3000
+  processor: ../helpers/trips.js
+  phases:
+    - name: One list per second
+      duration: 30
+      arrivalRate: 1
+
+  plugins:
+    # expect: checks each response and prints the failed ones with request and response.
+    expect: {}
+
+    # ensure: fails the whole run (non-zero exit code) when a limit is broken.
+    ensure:
+      # Limit from the test plan: response in under 500 ms. The check is strict (p95 < 500).
+      thresholds:
+        - http.response_time.p95: 500
+      # Every request must have listed the trips (200) and the list must have 100 trips
+      # (a wrong count makes the virtual user fail).
+      conditions:
+        - expression: 'http.codes.200 == http.requests and vusers.failed == 0'
+
+# min, mean, median, p95, p99 and max are printed in the summary and saved in the JSON report
+# (reports/trips.json). They are information, not limits: only the 500 ms above is defined.
+
+before:
+  flow:
+    - function: seedTrips
+
+scenarios:
+  - name: List the trips of a user with 100 trips
+    flow:
+      - get:
+          url: /api/trips
+          headers:
+            Authorization: 'Bearer {{ token }}'
+          afterResponse: checkTripCount
+          expect:
+            - statusCode: 200
+            - contentType: json
