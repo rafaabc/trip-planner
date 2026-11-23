@@ -7,6 +7,9 @@ dotenv.config();
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
+// A BASE_URL that is not localhost points at a deployed environment: nothing to start locally.
+const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(BASE_URL);
+
 // playwright-bdd reads the .feature files and generates Playwright spec files in .features-gen
 const testDir = defineBddConfig({
   features: 'features/**/*.feature',
@@ -34,7 +37,8 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   // Start the app under test. Locally an already running instance is reused.
-  webServer: [
+  // Against a deployed environment (BASE_URL is not localhost) nothing is started.
+  webServer: !isLocal ? undefined : [
     {
       command: 'npm start',
       cwd: '../..',
