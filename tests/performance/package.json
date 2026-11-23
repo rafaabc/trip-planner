@@ -5,9 +5,10 @@
   "description": "Performance tests for the Trip Planner API (Artillery)",
   "scripts": {
     "pretest": "node -e \"require('fs').mkdirSync('reports', { recursive: true })\"",
-    "test": "npm run test:register && npm run test:login",
+    "test": "npm run test:register && npm run test:login && npm run test:trips",
     "test:register": "cross-env ARTILLERY_DISABLE_TELEMETRY=1 artillery run scenarios/register.yml --output reports/register.json",
     "test:login": "cross-env ARTILLERY_DISABLE_TELEMETRY=1 artillery run scenarios/login.yml --output reports/login.json",
+    "test:trips": "cross-env ARTILLERY_DISABLE_TELEMETRY=1 artillery run scenarios/trips.yml --output reports/trips.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "audit": "npm audit --audit-level=high"
