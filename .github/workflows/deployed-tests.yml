@@ -46,8 +46,9 @@ jobs:
         run: npm ci
         working-directory: tests/api
 
-      - name: Run API tests (without known-bug guardrails)
-        run: npm run test:report -- --grep "@bug" --invert
+      - name: Run API tests (without known-bug guardrails and local-only tests)
+        # @local-only: the Vercel firewall answers 403 to an alg:none token before the app sees it
+        run: npm run test:report -- --grep "@bug|@local-only" --invert
         working-directory: tests/api
 
       - name: Upload test report

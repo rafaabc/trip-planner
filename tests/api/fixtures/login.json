@@ -55,6 +55,7 @@
     {
       "description": "the algorithm is none and the signature is empty",
       "alteration": "none",
+      "tag": "@local-only",
       "expectedStatus": 401,
       "expectedMessage": "Invalid or expired token"
     }
