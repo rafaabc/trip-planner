@@ -234,6 +234,29 @@ The workflow `.github/workflows/performance-tests.yml` is different, because res
 
 The timing test never runs on its own, so it cannot block a merge.
 
+### Deployed test environment (Vercel)
+
+The app is deployed to two Vercel projects, so it can be opened and tested without running anything locally:
+
+| Part | Vercel project | URL |
+|---|---|---|
+| Frontend | `trip-planner-frontend` (root `frontend/`) | https://trip-planner-frontend-flax.vercel.app |
+| API | `trip-planner-backend` (root `/`) | https://trip-planner-backend-iota.vercel.app (docs at `/api-docs`) |
+
+- `api/index.js` is the Vercel entrypoint: it seeds the in-memory store and exports the Express app. Locally the API still starts with `npm start`.
+- The API needs `JWT_SECRET` as a Vercel environment variable. The frontend is built with `VITE_API_URL` pointing at the API URL.
+- It is a test environment, not production. The API keeps its data in memory and runs as serverless functions, so data can disappear between requests. A failure caused by that is a finding, not a reason to change the tests or the limits.
+
+Run a suite against it by changing the target:
+
+| Suite | Command (from the suite folder) |
+|---|---|
+| API | `BASE_URL=<api url> npm test` (the expired-token test also needs the same `JWT_SECRET` the API runs with, or it is skipped) |
+| UI | `BASE_URL=<frontend url> API_URL=<api url> npm test` (Playwright starts no local server when `BASE_URL` is not localhost) |
+| Performance | `npm run test:login -- --target <api url>` (same for `test:register`) |
+
+The workflow `.github/workflows/deployed-tests.yml` runs all three suites against the deployed environment. It runs only manually (Actions tab, Run workflow) and needs the repository secret `TEST_ENV_JWT_SECRET`. It never runs on a pull request and must not be made a required check.
+
 ### Test data
 
 The database is seeded with these users. All passwords are for local testing only.

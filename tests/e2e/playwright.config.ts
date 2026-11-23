@@ -7,6 +7,9 @@ dotenv.config();
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
+// A BASE_URL that is not localhost points at a deployed environment: nothing to start locally.
+const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(BASE_URL);
+
 // playwright-bdd reads the .feature files and generates Playwright spec files in .features-gen
 const testDir = defineBddConfig({
   features: 'features/**/*.feature',
@@ -34,22 +37,25 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   // Start the app under test. Locally an already running instance is reused.
-  webServer: [
-    {
-      command: 'npm start',
-      cwd: '../..',
-      url: `${API_URL}/api-docs.yaml`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
-      // Production build served by vite preview. The dev server re-optimizes dependencies on its
-      // first load and reloads pages mid-test, which makes parallel runs flaky (ERR_ABORTED).
-      command: 'npm run build && npm run preview -- --port 5173 --strictPort',
-      cwd: '../../frontend',
-      url: BASE_URL,
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-  ],
+  // Against a deployed environment (BASE_URL is not localhost) nothing is started.
+  webServer: !isLocal
+    ? undefined
+    : [
+        {
+          command: 'npm start',
+          cwd: '../..',
+          url: `${API_URL}/api-docs.yaml`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+        },
+        {
+          // Production build served by vite preview. The dev server re-optimizes dependencies on its
+          // first load and reloads pages mid-test, which makes parallel runs flaky (ERR_ABORTED).
+          command: 'npm run build && npm run preview -- --port 5173 --strictPort',
+          cwd: '../../frontend',
+          url: BASE_URL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+        },
+      ],
 });
