@@ -105,21 +105,23 @@ describe('US-02 Log In - POST /api/auth/login and protected endpoints', () => {
       });
     });
 
-    data.alteredToken.forEach(({ description, alteration, expectedStatus, expectedMessage }) => {
-      it(`should return ${expectedStatus} when ${description}`, async () => {
-        const { body } = await login({ email: user.email, password: user.password });
-        const tokens = {
-          signature: withTamperedSignature(body.token),
-          payload: withTamperedPayload(body.token, { id: 999999 }),
-          none: `${Buffer.from('{"alg":"none","typ":"JWT"}').toString('base64url')}.${body.token.split('.')[1]}.`,
-        };
+    data.alteredToken.forEach(
+      ({ description, alteration, expectedStatus, expectedMessage, tag = '' }) => {
+        it(`should return ${expectedStatus} when ${description}${tag ? ` ${tag}` : ''}`, async () => {
+          const { body } = await login({ email: user.email, password: user.password });
+          const tokens = {
+            signature: withTamperedSignature(body.token),
+            payload: withTamperedPayload(body.token, { id: 999999 }),
+            none: `${Buffer.from('{"alg":"none","typ":"JWT"}').toString('base64url')}.${body.token.split('.')[1]}.`,
+          };
 
-        const res = await getTrips(`Bearer ${tokens[alteration]}`);
+          const res = await getTrips(`Bearer ${tokens[alteration]}`);
 
-        expect(res.status).to.equal(expectedStatus);
-        expect(res.body.message).to.equal(expectedMessage);
-      });
-    });
+          expect(res.status).to.equal(expectedStatus);
+          expect(res.body.message).to.equal(expectedMessage);
+        });
+      },
+    );
 
     // The API signs tokens with JWT_SECRET, so the test needs the same value in its environment.
     // CI sets it for the whole workflow. Locally: JWT_SECRET=<value> npm test

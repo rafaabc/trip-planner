@@ -255,6 +255,8 @@ Run a suite against it by changing the target:
 | UI | `BASE_URL=<frontend url> API_URL=<api url> npm test` (Playwright starts no local server when `BASE_URL` is not localhost) |
 | Performance | `npm run test:login -- --target <api url>` (same for `test:register`) |
 
+The API case `@local-only` (TC-02-05, token with `alg: none`) is skipped on the deployed environment: the Vercel firewall answers `403 Forbidden` before the request reaches the app, so only a local run can verify how the app handles that token.
+
 The workflow `.github/workflows/deployed-tests.yml` runs all three suites against the deployed environment. It runs only manually (Actions tab, Run workflow) and needs the repository secret `TEST_ENV_JWT_SECRET`. It never runs on a pull request and must not be made a required check.
 
 ### Test data
