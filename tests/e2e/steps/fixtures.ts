@@ -2,17 +2,22 @@ import { test as base, createBdd } from 'playwright-bdd';
 import { SignUpPage } from '../pages/SignUpPage';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import type { Account } from '../support/test-data';
+import { TripsPage } from '../pages/TripsPage';
+import type { Account, TripDetails } from '../support/test-data';
 
 interface Fixtures {
+  tripsPage: TripsPage;
   signUpPage: SignUpPage;
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
   // Data shared between the steps of one scenario (each scenario gets its own copy)
-  scenario: { account?: Account };
+  scenario: { account?: Account; trip?: TripDetails };
 }
 
 export const test = base.extend<Fixtures>({
+  tripsPage: async ({ page }, use) => {
+    await use(new TripsPage(page));
+  },
   signUpPage: async ({ page }, use) => {
     await use(new SignUpPage(page));
   },

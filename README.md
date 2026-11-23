@@ -282,6 +282,7 @@ Each trip has budget items in all seven categories.
 - Automated API tests for US-03 Manage Trip Budgets (create with valid and boundary dates, update with an invalid date range, list only own trips, read, update and delete another user's trip)
 - Automated UI tests for US-01 Sign Up (Playwright and Gherkin: valid sign-up, 6-character password, duplicate email, blank name, browser validation of each field)
 - Automated UI tests for US-02 Log In (Playwright and Gherkin: login with valid credentials)
+- Automated UI tests for US-03 Manage Trip Budgets (Playwright and Gherkin: create a trip through the website)
 - Continuous integration with GitHub Actions: quality gates, API tests and UI tests on every pull request
 
 ### Business rules
@@ -343,7 +344,7 @@ Each trip has budget items in all seven categories.
     ├── performance/        # Performance test project (own package.json)
     │   └── scenarios/      # Artillery scenarios, one file per user story (register.yml, login.yml)
     └── e2e/                # UI test project (own package.json)
-        ├── features/       # Gherkin scenarios (sign-up.feature, log-in.feature)
+        ├── features/       # Gherkin scenarios (sign-up.feature, log-in.feature, manage-trip-budgets.feature)
         ├── steps/          # Step definitions and fixtures (playwright-bdd)
         ├── pages/          # Page objects (locators and user actions, no assertions)
         ├── support/        # Test data helpers (unique email per run)

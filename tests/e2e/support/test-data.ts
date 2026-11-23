@@ -12,6 +12,23 @@ export interface Account {
   password: string;
 }
 
+export interface TripDetails {
+  cityFrom: string;
+  cityTo: string;
+  startDate: string;
+  endDate: string;
+}
+
+export function newTrip(overrides: Partial<TripDetails> = {}): TripDetails {
+  return {
+    cityFrom: 'Copenhagen',
+    cityTo: 'Lisbon',
+    startDate: '2027-03-10',
+    endDate: '2027-03-15',
+    ...overrides,
+  };
+}
+
 export function newAccount(overrides: Partial<Account> = {}): Account {
   return {
     name: 'Dana Olsen',
