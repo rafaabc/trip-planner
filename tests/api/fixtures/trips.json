@@ -1,0 +1,72 @@
+{
+  "validTrip": {
+    "cityFrom": "Copenhagen",
+    "cityTo": "Lisbon",
+    "startDate": "2027-03-10",
+    "endDate": "2027-03-15",
+    "expectedTitle": "Trip budget - Copenhagen - Lisbon"
+  },
+  "create": [
+    {
+      "testCase": "TC-03-02",
+      "description": "the end date is the same day as the start date",
+      "payload": {
+        "cityFrom": "Aarhus",
+        "cityTo": "Porto",
+        "startDate": "2027-04-01",
+        "endDate": "2027-04-01"
+      },
+      "expectedStatus": 201
+    },
+    {
+      "testCase": "TC-03-03",
+      "description": "the end date is one day before the start date",
+      "payload": {
+        "cityFrom": "Aarhus",
+        "cityTo": "Porto",
+        "startDate": "2027-04-02",
+        "endDate": "2027-04-01"
+      },
+      "expectedStatus": 400,
+      "expectedMessage": "endDate must not be before startDate"
+    }
+  ],
+  "updateEndBeforeStart": [
+    {
+      "description": "the end date is moved one day before the start date",
+      "changes": { "endDate": "2027-03-09" },
+      "expectedStatus": 400,
+      "expectedMessage": "endDate must not be before startDate"
+    },
+    {
+      "description": "the start date is moved one day after the end date",
+      "changes": { "startDate": "2027-03-16" },
+      "expectedStatus": 400,
+      "expectedMessage": "endDate must not be before startDate"
+    }
+  ],
+  "otherUserAccess": [
+    {
+      "testCase": "TC-03-10",
+      "description": "reads",
+      "method": "GET",
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    },
+    {
+      "testCase": "TC-03-11",
+      "description": "updates",
+      "method": "PUT",
+      "changes": { "cityTo": "Madrid" },
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    },
+    {
+      "testCase": "TC-03-12",
+      "description": "deletes",
+      "method": "DELETE",
+      "expectedStatus": 404,
+      "expectedMessage": "Trip not found"
+    }
+  ]
+}
