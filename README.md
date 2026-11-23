@@ -145,7 +145,7 @@ npm test
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
-Ten tests (tagged `@bug #19`, `@bug #20`, `@bug #44`, `@bug #45` and `@bug #56`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
+Twelve tests (tagged `@bug #19`, `@bug #20`, `@bug #44`, `@bug #45` and `@bug #56`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
 
 ```bash
 npm run test:report -- --grep "@bug" --invert   # without the known-bug guardrails

@@ -5,6 +5,7 @@ const data = require('../../fixtures/items.json');
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const TRIPS_PATH = '/api/trips';
+const OVERSIZED_DESCRIPTION_LENGTH = 110 * 1024;
 
 const authorized = (req, token) => req.set('Authorization', `Bearer ${token}`);
 const itemsPath = (tripId) => `${TRIPS_PATH}/${tripId}/items`;
@@ -200,6 +201,31 @@ describe('US-04 Manage Budget Items - /api/trips/{tripId}/items', () => {
   // Guardrails: these tests describe the expected behavior of open bugs and are
   // expected to FAIL until the bugs are fixed.
   describe('Guardrails for known bugs', () => {
+    describe('@bug #19 BUG-001 Oversized request body on items', () => {
+      it('should return 413 when the body of a create request exceeds the size limit', async () => {
+        const trip = await createOwnTrip(owner.token);
+
+        const res = await createItem(owner.token, trip.id, {
+          category: 'Food',
+          amount: 10,
+          description: 'a'.repeat(OVERSIZED_DESCRIPTION_LENGTH),
+        });
+
+        expect(res.status).to.equal(413);
+      });
+
+      it('should return 413 when the body of an update request exceeds the size limit', async () => {
+        const trip = await createOwnTrip(owner.token);
+        const item = await createOwnItem(owner.token, trip.id);
+
+        const res = await updateItem(owner.token, trip.id, item.id, {
+          description: 'a'.repeat(OVERSIZED_DESCRIPTION_LENGTH),
+        });
+
+        expect(res.status).to.equal(413);
+      });
+    });
+
     describe('@bug #56 BUG-005 Amount 1e308 is stored as null', () => {
       it('should reject the amount or store it as a number, never as null', async () => {
         const trip = await createOwnTrip(owner.token);
