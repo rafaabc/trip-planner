@@ -1,0 +1,169 @@
+name: Deployed Environment Tests
+
+# Runs the API, UI and performance suites against the deployed Vercel test environment instead of
+# localhost. On demand only: response times on a shared platform vary, and the deployed API keeps
+# its data in memory, so a run can fail for reasons that do not happen locally.
+# Never add this workflow to the PR checks and never make it a required check.
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Base URL of the deployed API
+        required: true
+        default: https://trip-planner-backend-iota.vercel.app
+      web_url:
+        description: Base URL of the deployed frontend
+        required: true
+        default: https://trip-planner-frontend-flax.vercel.app
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 24
+  # Same value the deployed API runs with (Vercel env var JWT_SECRET). Needed by the expired-token test.
+  JWT_SECRET: ${{ secrets.TEST_ENV_JWT_SECRET }}
+
+jobs:
+  api-tests:
+    name: API tests (deployed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: ${{ inputs.api_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/api/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/api
+
+      - name: Run API tests (without known-bug guardrails)
+        run: npm run test:report -- --grep "@bug" --invert
+        working-directory: tests/api
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployed-api-tests-report
+          path: tests/api/reports
+          if-no-files-found: warn
+
+  # Non-blocking: tests that describe the expected behavior of open bugs
+  bug-guardrails:
+    name: Known-bug guardrails (deployed, non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    env:
+      BASE_URL: ${{ inputs.api_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/api/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/api
+
+      - name: Run known-bug guardrails
+        run: npm run test:report -- --grep "@bug"
+        working-directory: tests/api
+
+      - name: Upload guardrails report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployed-bug-guardrails-report
+          path: tests/api/reports
+          if-no-files-found: warn
+
+  ui-tests:
+    name: UI tests (deployed, Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # A BASE_URL that is not localhost makes Playwright skip its local webServer
+      BASE_URL: ${{ inputs.web_url }}
+      API_URL: ${{ inputs.api_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/e2e/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/e2e
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: tests/e2e
+
+      - name: Run UI tests
+        run: npm test -- --grep-invert "@bug"
+        working-directory: tests/e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployed-playwright-report
+          path: tests/e2e/playwright-report
+          if-no-files-found: warn
+
+  performance-tests:
+    name: Performance tests (deployed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tests/performance/package-lock.json
+
+      - name: Install test dependencies
+        run: npm ci
+        working-directory: tests/performance
+
+      - name: Run performance tests
+        # The scenarios default to localhost; --target points them at the deployed API
+        run: |
+          npm run test:register -- --target "$API_URL"
+          npm run test:login -- --target "$API_URL"
+        working-directory: tests/performance
+        env:
+          API_URL: ${{ inputs.api_url }}
+
+      - name: Upload performance reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployed-performance-reports
+          path: tests/performance/reports
+          if-no-files-found: warn
