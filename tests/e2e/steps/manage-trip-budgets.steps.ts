@@ -4,13 +4,25 @@ import { newTrip } from '../support/test-data';
 
 // "an account already exists" is a shared step defined in sign-up.steps.ts.
 
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+
 // ── Given ─────────────────────────────────────────────────────────────
 
-Given('I am logged in with that account', async ({ page, loginPage, dashboardPage, scenario }) => {
-  await loginPage.open();
-  await loginPage.logIn(scenario.account!);
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(dashboardPage.logoutButton).toBeVisible();
+Given('I am logged in with that account', async ({ page, request, scenario }) => {
+  // Precondition through the API: the login form is already covered by the US-02 scenario.
+  // The session is stored the same way the app does it, before any page loads.
+  const response = await request.post(`${API_URL}/api/auth/login`, {
+    data: { email: scenario.account!.email, password: scenario.account!.password },
+  });
+  expect(response.status()).toBe(200);
+  const { token, user } = await response.json();
+  await page.addInitScript(
+    ({ token, user }) => {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    },
+    { token, user },
+  );
 });
 
 Given('I am on the Trips page', async ({ tripsPage }) => {

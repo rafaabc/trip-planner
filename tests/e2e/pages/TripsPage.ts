@@ -4,7 +4,6 @@ import type { TripDetails } from '../support/test-data';
 // Page object: locators and user actions only. Assertions live in the step definitions.
 export class TripsPage {
   readonly heading: Locator;
-  readonly navLink: Locator;
   readonly fromField: Locator;
   readonly toField: Locator;
   readonly startDateField: Locator;
@@ -13,7 +12,6 @@ export class TripsPage {
 
   constructor(private readonly page: Page) {
     this.heading = page.getByRole('heading', { name: 'Trips', exact: true });
-    this.navLink = page.getByRole('link', { name: 'Trips', exact: true });
     this.fromField = page.getByLabel('From', { exact: true });
     this.toField = page.getByLabel('To', { exact: true });
     this.startDateField = page.getByLabel('Start date');
@@ -22,7 +20,7 @@ export class TripsPage {
   }
 
   async open() {
-    await this.navLink.click();
+    await this.page.goto('/trips');
   }
 
   async createTrip(trip: TripDetails) {
