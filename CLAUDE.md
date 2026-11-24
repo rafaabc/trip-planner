@@ -35,4 +35,4 @@ All code and text in this project must be in English.
 - Test plan: GitHub Wiki (Test Plan). Work is tracked in the GitHub Project board and issues; bugs use the `bug` label and are linked as sub-issues of the session issue.
 
 ## Documentation workflow
-- Before opening a PR, check whether `README.md` and this file need an update (new folders, scripts, versions, decisions), and update them in the same branch.
+- Before opening a PR, check whether `README.md`, `tests/README.md` (how to run the suites, CI, deployed environment, guardrail count) and this file need an update (new folders, scripts, versions, decisions), and update them in the same branch.
