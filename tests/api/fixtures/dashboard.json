@@ -1,0 +1,77 @@
+{
+  "categories": [
+    "Flights",
+    "Accommodation",
+    "Activities",
+    "Food",
+    "Transport",
+    "Travel insurance",
+    "Extras"
+  ],
+  "dailyCategories": ["Activities", "Food", "Transport", "Extras"],
+  "multiDayTrip": {
+    "trip": {
+      "cityFrom": "Copenhagen",
+      "cityTo": "Lisbon",
+      "startDate": "2027-03-10",
+      "endDate": "2027-03-15"
+    },
+    "items": [
+      { "category": "Flights", "amount": 1850, "description": "Return flights" },
+      { "category": "Accommodation", "amount": 3000, "description": "Hotel" },
+      { "category": "Food", "amount": 250, "description": "Dinner" },
+      { "category": "Food", "amount": 150.5, "description": "Lunch" },
+      { "category": "Activities", "amount": 199.5, "description": "Tour" },
+      { "category": "Transport", "amount": 100, "description": "Metro" }
+    ],
+    "expectedTotals": {
+      "Flights": 1850,
+      "Accommodation": 3000,
+      "Activities": 199.5,
+      "Food": 400.5,
+      "Transport": 100,
+      "Travel insurance": 0,
+      "Extras": 0
+    },
+    "expectedGrandTotal": 5550,
+    "expectedDaily": { "days": 6, "total": 700, "perDay": 116.67 }
+  },
+  "oneDayTrip": {
+    "trip": {
+      "cityFrom": "Copenhagen",
+      "cityTo": "Malmo",
+      "startDate": "2027-05-01",
+      "endDate": "2027-05-01"
+    },
+    "items": [
+      { "category": "Food", "amount": 120, "description": "Lunch" },
+      { "category": "Transport", "amount": 80, "description": "Train" }
+    ],
+    "expectedDaily": { "days": 1, "total": 200, "perDay": 200 }
+  },
+  "preTripChange": {
+    "trip": {
+      "cityFrom": "Copenhagen",
+      "cityTo": "Rome",
+      "startDate": "2027-06-01",
+      "endDate": "2027-06-04"
+    },
+    "inTripItem": { "category": "Food", "amount": 400, "description": "Meals" },
+    "expectedDaily": { "days": 4, "total": 400, "perDay": 100 },
+    "preTripItems": [
+      { "category": "Flights", "amount": 1500, "description": "Flights" },
+      { "category": "Accommodation", "amount": 2500, "description": "Hotel" },
+      { "category": "Travel insurance", "amount": 300, "description": "Insurance" }
+    ]
+  },
+  "emptyTrip": {
+    "cityFrom": "Copenhagen",
+    "cityTo": "Berlin",
+    "startDate": "2027-07-01",
+    "endDate": "2027-07-03"
+  },
+  "otherUserAccess": {
+    "expectedStatus": 404,
+    "expectedMessage": "Trip not found"
+  }
+}

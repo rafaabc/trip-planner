@@ -287,6 +287,7 @@ Each trip has budget items in all seven categories.
 - Automated API tests for US-02 Log In (valid and invalid credentials, protected endpoint with a valid, missing, malformed, altered or expired token)
 - Automated API tests for US-03 Manage Trip Budgets (create with valid and boundary dates, update with an invalid date range, list only own trips, read, update and delete another user's trip)
 - Automated API tests for US-04 Manage Budget Items (create with and without description, each allowed category, invalid category, amount 0, negative and non-numeric amount, list own items, list, create, update and delete in another user's trip)
+- Automated API tests for US-05 View Trip Dashboard (several items in the same category, daily budget of a multi-day and a one-day trip, pre-trip categories excluded from the daily budget, trip without items, another user's trip)
 - Automated UI tests for US-01 Sign Up (Playwright and Gherkin: valid sign-up, 6-character password, duplicate email, blank name, browser validation of each field)
 - Automated UI tests for US-02 Log In (Playwright and Gherkin: login with valid credentials)
 - Automated UI tests for US-03 Manage Trip Budgets (Playwright and Gherkin: create a trip through the website)
@@ -346,6 +347,7 @@ Each trip has budget items in all seven categories.
     │   │   ├── login/      # US-02 Log In tests (login.test.js)
     │   │   ├── trips/      # US-03 Manage Trip Budgets tests (trips.test.js)
     │   │   ├── items/      # US-04 Manage Budget Items tests (items.test.js)
+    │   │   ├── dashboard/  # US-05 View Trip Dashboard tests (dashboard.test.js)
     │   │   └── helpers/    # Test helpers (unique email per run, token builders, logged-in user)
     │   ├── fixtures/       # Test data for the data driven tests
     │   ├── eslint.config.mjs  # ESLint configuration
