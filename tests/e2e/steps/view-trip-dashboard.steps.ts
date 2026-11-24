@@ -17,7 +17,7 @@ Given(
       headers: { Authorization: `Bearer ${scenario.token}` },
       data: { category, amount: Number(amount), description: `${category} item` },
     });
-    expect(response.status()).toBe(201);
+    expect(response.status(), await response.text()).toBe(201);
   },
 );
 

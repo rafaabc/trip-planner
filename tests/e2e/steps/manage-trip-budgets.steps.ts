@@ -14,7 +14,7 @@ Given('I am logged in with that account', async ({ page, request, scenario }) =>
   const response = await request.post(`${API_URL}/api/auth/login`, {
     data: { email: scenario.account!.email, password: scenario.account!.password },
   });
-  expect(response.status()).toBe(200);
+  expect(response.status(), await response.text()).toBe(200);
   const { token, user } = await response.json();
   scenario.token = token;
   await page.addInitScript(
