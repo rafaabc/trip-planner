@@ -1,0 +1,54 @@
+# US-05 View Trip Dashboard: performance of GET /api/trips/{tripId}/dashboard with 200 items
+# (issue #39).
+#
+# Setup: before the load phase, one new user is created with one 6-day trip that has 200 budget
+# items (helpers/dashboard.js). The setup requests are not measured. Only the dashboard requests
+# below are in the statistics.
+#
+# Profile: 1 dashboard per second for 30 seconds (about 30 requests), all for the same trip with
+# 200 items. Requests do not overlap, so each one measures the endpoint and not a queue. The test
+# plan asks for the dashboard of a trip that has about 200 items; 30 requests give statistics
+# that mean something (p95, p99) and keep the same limit.
+#
+# The target can be overridden: npm run test:dashboard -- --target http://localhost:3000
+
+config:
+  target: http://localhost:3000
+  processor: ../helpers/dashboard.js
+  phases:
+    - name: One dashboard per second
+      duration: 30
+      arrivalRate: 1
+
+  plugins:
+    # expect: checks each response and prints the failed ones with request and response.
+    expect: {}
+
+    # ensure: fails the whole run (non-zero exit code) when a limit is broken.
+    ensure:
+      # Limit from the test plan: response in under 500 ms. The check is strict (p95 < 500).
+      thresholds:
+        - http.response_time.p95: 500
+      # Every request must have returned the dashboard (200) with the correct totals
+      # (a wrong total makes the virtual user fail).
+      conditions:
+        - expression: 'http.codes.200 == http.requests and vusers.failed == 0'
+
+# min, mean, median, p95, p99 and max are printed in the summary and saved in the JSON report
+# (reports/dashboard.json). They are information, not limits: only the 500 ms above is defined.
+
+before:
+  flow:
+    - function: seedDashboard
+
+scenarios:
+  - name: View the dashboard of a trip with 200 items
+    flow:
+      - get:
+          url: '/api/trips/{{ tripId }}/dashboard'
+          headers:
+            Authorization: 'Bearer {{ token }}'
+          afterResponse: checkDashboardTotals
+          expect:
+            - statusCode: 200
+            - contentType: json

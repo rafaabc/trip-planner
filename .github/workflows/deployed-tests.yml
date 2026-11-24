@@ -160,6 +160,7 @@ jobs:
           npm run test:login -- --target "$API_URL"
           npm run test:trips -- --target "$API_URL"
           npm run test:items -- --target "$API_URL"
+          npm run test:dashboard -- --target "$API_URL"
         working-directory: tests/performance
         env:
           API_URL: ${{ inputs.api_url }}
