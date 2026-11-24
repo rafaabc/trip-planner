@@ -16,7 +16,7 @@ Given('I have a trip', async ({ request, scenario }) => {
     headers: { Authorization: `Bearer ${scenario.token}` },
     data: scenario.trip,
   });
-  expect(response.status()).toBe(201);
+  expect(response.status(), await response.text()).toBe(201);
   scenario.tripId = (await response.json()).id;
 });
 

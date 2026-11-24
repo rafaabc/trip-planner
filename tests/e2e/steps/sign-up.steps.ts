@@ -16,7 +16,7 @@ Given('an account already exists', async ({ request, scenario }) => {
   // Precondition created through the API: faster and independent of the UI under test
   scenario.account = newAccount();
   const response = await request.post(`${API_URL}/api/auth/register`, { data: scenario.account });
-  expect(response.status()).toBe(201);
+  expect(response.status(), await response.text()).toBe(201);
 });
 
 // ── When ──────────────────────────────────────────────────────────────
