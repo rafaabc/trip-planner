@@ -291,6 +291,7 @@ Each trip has budget items in all seven categories.
 - Automated UI tests for US-02 Log In (Playwright and Gherkin: login with valid credentials)
 - Automated UI tests for US-03 Manage Trip Budgets (Playwright and Gherkin: create a trip through the website)
 - Automated UI tests for US-04 Manage Budget Items (Playwright and Gherkin: create a budget item through the website)
+- Automated UI tests for US-05 View Trip Dashboard (Playwright and Gherkin: open the dashboard of a trip with items)
 - Continuous integration with GitHub Actions: quality gates, API tests and UI tests on every pull request
 
 ### Business rules
@@ -354,7 +355,7 @@ Each trip has budget items in all seven categories.
     │   ├── scenarios/      # Artillery scenarios, one file per user story (register.yml, login.yml, trips.yml, items.yml)
     │   └── helpers/        # JavaScript used by the scenarios (trips.js creates the 100 trips, items.js the 200 items)
     └── e2e/                # UI test project (own package.json)
-        ├── features/       # Gherkin scenarios (sign-up.feature, log-in.feature, manage-trip-budgets.feature, manage-budget-items.feature)
+        ├── features/       # Gherkin scenarios (sign-up.feature, log-in.feature, manage-trip-budgets.feature, manage-budget-items.feature, view-trip-dashboard.feature)
         ├── steps/          # Step definitions and fixtures (playwright-bdd)
         ├── pages/          # Page objects (locators and user actions, no assertions)
         ├── support/        # Test data helpers (unique email per run)
