@@ -192,4 +192,23 @@ describe('US-05 View Trip Dashboard - GET /api/trips/{tripId}/dashboard', () => 
       expect(res.body.grandTotal).to.equal(expectedGrandTotal);
     });
   });
+
+  // Guardrails: these tests describe the expected behavior of open bugs and are
+  // expected to FAIL until the bugs are fixed.
+  describe('Guardrails for known bugs', () => {
+    describe('@bug #65 BUG-006 Invalid percent-encoding in the trip id', () => {
+      it('should return 400 when the trip id of the dashboard is %zz', async () => {
+        const res = await getDashboard(owner.token, '%zz');
+
+        expect(res.status).to.equal(400);
+        expect(res.body.message).to.be.a('string');
+      });
+
+      it('should return 400 when the trip id of the trip itself is %zz', async () => {
+        const res = await authorized(request(BASE_URL).get(`${TRIPS_PATH}/%zz`), owner.token);
+
+        expect(res.status).to.equal(400);
+      });
+    });
+  });
 });
