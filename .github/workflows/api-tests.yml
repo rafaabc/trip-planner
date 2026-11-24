@@ -112,7 +112,7 @@ jobs:
           if-no-files-found: warn
 
   # Non-blocking job: tests that describe the expected behavior of open bugs.
-  # They fail until the bugs are fixed (see issues #19, #20, #44, #45 and #56), so a failure here
+  # They fail until the bugs are fixed (see issues #19, #20, #44, #45, #56 and #65), so a failure here
   # does not fail the workflow.
   bug-guardrails:
     name: Known-bug guardrails (non-blocking)

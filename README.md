@@ -145,7 +145,7 @@ npm test
 | `npm run format:check` | Check formatting with Prettier |
 | `npm run audit` | `npm audit` for high severity issues |
 
-Twelve tests (tagged `@bug #19`, `@bug #20`, `@bug #44`, `@bug #45` and `@bug #56`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
+Fourteen tests (tagged `@bug #19`, `@bug #20`, `@bug #44`, `@bug #45`, `@bug #56` and `@bug #65`) describe the expected behavior of open bugs and **fail on purpose** until the bugs are fixed. To run everything except them, or only them:
 
 ```bash
 npm run test:report -- --grep "@bug" --invert   # without the known-bug guardrails
@@ -230,7 +230,7 @@ The workflow `.github/workflows/api-tests.yml` runs on every pull request to `ma
 |---|---|---|
 | Lint, format and audit | Yes | `npm run lint`, `npm run format:check` and `npm run audit` in `tests/api` |
 | API tests | Yes | Starts the backend and runs every test except the `@bug` guardrails |
-| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19, #20, #44, #45 and #56 are fixed |
+| Known-bug guardrails (non-blocking) | No | Runs only the `@bug` tests, which fail until bugs #19, #20, #44, #45, #56 and #65 are fixed |
 
 The Mochawesome HTML report of each test job is uploaded as a workflow artifact.
 
